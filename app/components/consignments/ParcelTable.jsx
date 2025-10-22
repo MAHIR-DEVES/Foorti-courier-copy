@@ -13,8 +13,8 @@ const tabs = [
   { label: 'Approval Pending', value: 'Approval Pending' },
   { label: 'Partially Delivered', value: 'Partially Delivered' },
   { label: 'Cancelled', value: 'Cancelled' },
-  { label: 'Payment', value: 'Payment' },
   { label: 'Delivered ', value: 'Delivered ' },
+  { label: 'Payment', value: 'Payment' },
 ];
 
 const statusMapping = {
