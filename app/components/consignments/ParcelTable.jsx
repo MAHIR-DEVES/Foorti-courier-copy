@@ -11,10 +11,10 @@ const tabs = [
   { label: 'List by Date', value: 'List by Date' },
   { label: 'Pending', value: 'Pending' },
   { label: 'Approval Pending', value: 'Approval Pending' },
-  { label: 'Delivered', value: 'Delivered' },
   { label: 'Partially Delivered', value: 'Partially Delivered' },
   { label: 'Cancelled', value: 'Cancelled' },
   { label: 'Payment', value: 'Payment' },
+  { label: 'Delivered ', value: 'Delivered ' },
 ];
 
 const statusMapping = {
@@ -36,14 +36,7 @@ const statusMapping = {
     'Transfer Reach To Branch',
     'Received By Destination Hub',
   ],
-  Delivered: [
-    'Successfully Delivered',
-    'Delivered Amount Collected from Branch',
-    'Delivered Amount Send to Fulfillment',
-    'Payment Processing',
-    'Payment Processing Complete',
-    'Payment Completed',
-  ],
+
   'Partially Delivered': ['Partially Delivered'],
   Cancelled: [
     'Return Confirm',
@@ -74,11 +67,15 @@ const ParcelTable = () => {
   const [activeTab, setActiveTab] = useState(queryStatus);
   const [orders, setOrders] = useState([]);
   const [payments, setPayment] = useState([]);
+  const [delivered, setDelivered] = useState([]);
+
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
   const [paginationGroup, setPaginationGroup] = useState(1);
   const [expandedDates, setExpandedDates] = useState({});
+
+  // ------------------------------------------------
 
   // fetch orders
   useEffect(() => {
@@ -134,6 +131,34 @@ const ParcelTable = () => {
       }
     };
     fetchPayments();
+  }, []);
+
+  // fetch delivered
+  useEffect(() => {
+    const fetchDelivered = async () => {
+      try {
+        const stored = localStorage.getItem('token');
+        if (!stored) return;
+        const parsed = JSON.parse(stored);
+        const token = parsed?.token;
+        if (!token) return;
+
+        const response = await fetch(
+          `https://admin.merchantfcservice.com/api/order-delivered`,
+          { method: 'GET', headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        if (!response.ok) throw new Error('Failed to fetch delivered');
+        const data = await response.json();
+
+        setDelivered(data?.in_review_delivered || []);
+      } catch (err) {
+        console.error('API Error:', err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDelivered();
   }, []);
 
   useEffect(() => {
@@ -216,7 +241,8 @@ const ParcelTable = () => {
       activeTab === 'List by Date' ||
       activeTab === 'Delivered' ||
       activeTab === 'Cancelled' ||
-      activeTab === 'Payment'
+      activeTab === 'Payment' ||
+      activeTab === 'Delivered '
     ) {
       const today = new Date().toISOString().split('T')[0];
       setExpandedDates({ [today]: true });
@@ -452,6 +478,114 @@ const ParcelTable = () => {
               ))
             );
           })()
+        ) : activeTab === 'Delivered ' ? (
+          // NEW: Render a payments-style table using fakeDeliveredPayments
+          (() => {
+            const grouped = delivered.reduce((acc, item) => {
+              const dateKey = item.delivered_date?.split(' ')[0];
+              if (!acc[dateKey]) acc[dateKey] = [];
+              acc[dateKey].push(item);
+              return acc;
+            }, {});
+
+            return Object.keys(grouped).length === 0 ? (
+              <p className="text-center py-6 text-gray-600">
+                No delivered orders found.
+              </p>
+            ) : (
+              Object.keys(grouped).map(date => (
+                <div key={date} className="mb-6 rounded-lg shadow-sm">
+                  <div className="flex justify-between items-center bg-blue-50 p-4 rounded-t-lg border border-gray-200">
+                    <h2 className="text-lg font-bold text-gray-800 flex items-center">
+                      <Calendar className="w-5 h-5 mr-2 text-blue-600" />
+                      {date} (Delivered)
+                      <span className="ml-3 text-sm text-gray-600 bg-white px-2 py-1 rounded-full">
+                        {grouped[date].length} items
+                      </span>
+                    </h2>
+                    <button
+                      onClick={() => toggleDateExpand(date)}
+                      className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
+                    >
+                      {expandedDates[date] ? 'Hide Data' : 'View Data'}
+                    </button>
+                  </div>
+
+                  {expandedDates[date] && (
+                    <div className="overflow-hidden rounded-b-lg shadow-sm border border-gray-200 border-t-0">
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left text-gray-700">
+                          <thead className="bg-gray-50 border-b border-gray-200">
+                            <tr className="text-primary">
+                              <th className="px-6 py-4">SL#</th>
+                              <th className="px-6 py-4">Tracking ID</th>
+                              <th className="px-6 py-4">Date</th>
+                              <th className="px-6 py-4">Customer</th>
+                              <th className="px-6 py-4">Phone</th>
+                              <th className="px-6 py-4">Charge</th>
+                              <th className="px-6 py-4">Status</th>
+                              <th className="px-6 py-4 text-center">Action</th>
+                            </tr>
+                          </thead>
+                          <tbody className="bg-white divide-y divide-gray-100">
+                            {grouped[date].map((order, idx) => (
+                              <tr
+                                key={order.order_id}
+                                className="hover:bg-gray-50 transition duration-150"
+                              >
+                                <td className="px-6 py-4">{idx + 1}</td>
+
+                                <td className="px-6 py-4">
+                                  {order.tracking_id}
+                                </td>
+                                <td className="px-6 py-4">
+                                  {order?.delivered_date
+                                    ? new Date(
+                                        order.delivered_date
+                                      ).toLocaleString('en-US', {
+                                        hour: 'numeric',
+                                        minute: 'numeric',
+                                        second: 'numeric',
+                                        hour12: true,
+                                        year: 'numeric',
+                                        month: '2-digit',
+                                        day: '2-digit',
+                                      })
+                                    : '-'}
+                                </td>
+
+                                <td className="px-6 py-4 font-semibold">
+                                  {order?.customer_name}
+                                </td>
+                                <td className="px-6 py-4  font-semibold">
+                                  {order?.customer_phone}
+                                </td>
+                                <td className="px-6 py-4  font-semibold">
+                                  {order?.delivery_charge}৳
+                                </td>
+                                <td className="px-6 py-4 text-green-600 font-semibold">
+                                  {order?.status}
+                                </td>
+
+                                <td className="px-6 py-4 text-center">
+                                  <Link
+                                    href={`/dashboard/consignments/${order.tracking_id}`}
+                                    className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+                                  >
+                                    View
+                                  </Link>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))
+            );
+          })()
         ) : (
           // normal table
           <table className="w-full table-auto text-[19px] text-left text-gray-700">
@@ -482,7 +616,24 @@ const ParcelTable = () => {
                     key={`${order.id}-${idx}`}
                   >
                     <td className="px-4 py-3">{startIndex + idx + 1}</td>
-                    <td className="px-4 py-3">{order.order_create_date}</td>
+                    <td className="px-6 py-4">
+                      {order?.order_create_date
+                        ? new Date(order.order_create_date).toLocaleString(
+                            'en-US',
+                            {
+                              hour: 'numeric',
+                              minute: 'numeric',
+                              second: 'numeric',
+                              hour12: true,
+                              year: 'numeric',
+                              month: '2-digit',
+                              day: '2-digit',
+                            }
+                          )
+                        : '-'}
+                    </td>
+
+                    {/* <td className="px-4 py-3">{order.}</td> */}
                     <td className="px-4 py-3">
                       <Link
                         href={`/dashboard/consignments/${order.tracking_id}`}
@@ -518,7 +669,8 @@ const ParcelTable = () => {
       {activeTab !== 'List by Date' &&
         activeTab !== 'Delivered' &&
         activeTab !== 'Cancelled' &&
-        activeTab !== 'Payment' && (
+        activeTab !== 'Payment' &&
+        activeTab !== 'Delivered ' && (
           <div className="flex justify-center items-center mt-6">
             <button
               onClick={handlePreviousPageGroup}
