@@ -1,8 +1,10 @@
 'use client';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
 const DeliveryForm = () => {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     phone: '',
     cod: '',
@@ -119,11 +121,12 @@ const DeliveryForm = () => {
         imp: 'Regular',
         area: formData.area,
         order_id: formData.invoice,
-        is_exchange: formData.exchange ? 1 : 0,
-        isPartial: formData.partial ? 1 : 0,
+        is_exchange: 1,
+        isPartial: 1,
       };
+      // is_exchange: formData.exchange ? 1 : 0,
+      // isPartial: formData.partial ? 1 : 0,
 
-      console.log('Sending Data:', finalData);
       const stored = localStorage.getItem('token');
       const token = stored ? JSON.parse(stored).token : null;
 
@@ -139,11 +142,14 @@ const DeliveryForm = () => {
         }
       );
 
+      console.log(finalData);
+
       if (!res.ok) {
         toast.error(`Request failed: ${res.status}`);
       }
       if (res.status === 200) {
         toast.success('parcel loaded successfully');
+        router.push('/dashboard/consignments');
         setFormData({
           phone: '',
           cod: '',
