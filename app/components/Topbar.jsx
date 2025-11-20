@@ -10,7 +10,6 @@ import { useRouter } from 'next/navigation';
 const Topbar = ({ toggleSidebar, toggleMobileSearch, showMobileSearch }) => {
   const [query, setQuery] = useState('');
   const [parcel, setParcel] = useState(null);
-  console.log(parcel.data);
 
   const [balanceClicked, setBalanceClicked] = useState(false);
   const [error, setError] = useState(null);
@@ -142,6 +141,10 @@ const Topbar = ({ toggleSidebar, toggleMobileSearch, showMobileSearch }) => {
     </button>
   );
 
+  // if (!parcel || !parcel.data) {
+  //   return <p>Loading...</p>;
+  // }
+
   return (
     <div className="bg-primary px-5 py-8 shadow sticky top-0 z-10">
       <header className="flex justify-between items-center">
@@ -179,12 +182,12 @@ const Topbar = ({ toggleSidebar, toggleMobileSearch, showMobileSearch }) => {
                     <p className="text-red-500 text-sm">{error}</p>
                   ) : (
                     <div className="divide-y divide-gray-100">
-                      {parcel?.data.map(item => (
+                      {parcel?.data?.map(item => (
                         <div
-                          key={item.id}
+                          key={item?.id}
                           onClick={() =>
                             router.push(
-                              `/dashboard/consignments/${item.tracking_id}`
+                              `/dashboard/consignments/${item?.tracking_id}`
                             )
                           }
                           className="cursor-pointer py-4 px-4 hover:bg-gray-50 transition-colors duration-200 group"
@@ -192,10 +195,10 @@ const Topbar = ({ toggleSidebar, toggleMobileSearch, showMobileSearch }) => {
                           <div className="flex items-center justify-between">
                             <div>
                               <p className="font-medium text-gray-900 group-hover:text-[#04DA8D] transition-colors duration-200">
-                                Tracking Id: {item.tracking_id}
+                                Tracking Id: {item?.tracking_id}
                               </p>
                               <p className="text-sm text-gray-500 mt-1">
-                                Phone: {item.customer_phone}
+                                Phone: {item?.customer_phone}
                               </p>
                             </div>
                             <svg
