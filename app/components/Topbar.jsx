@@ -267,14 +267,42 @@ const Topbar = ({ toggleSidebar, toggleMobileSearch, showMobileSearch }) => {
               {error ? (
                 <p className="text-red-500 text-sm">{error}</p>
               ) : (
-                <div onClick={handleResultClick} className="flex gap-2">
-                  <p className="text-sm text-gray-700">
-                    <span className="font-semibold">T</span>{' '}
-                    {parcel?.data?.tracking_id}
-                  </p>
-                  <p className="text-sm text-gray-700">
-                    {parcel?.data?.customer_name}
-                  </p>
+                <div className="divide-y divide-gray-100">
+                  {parcel?.data?.map(item => (
+                    <div
+                      key={item?.id}
+                      onClick={() =>
+                        router.push(
+                          `/dashboard/consignments/${item?.tracking_id}`
+                        )
+                      }
+                      className="cursor-pointer py-4 px-4 hover:bg-gray-50 transition-colors duration-200 group"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium text-gray-900 group-hover:text-[#04DA8D] transition-colors duration-200">
+                            Tracking Id: {item?.tracking_id}
+                          </p>
+                          <p className="text-sm text-gray-500 mt-1">
+                            Phone: {item?.customer_phone}
+                          </p>
+                        </div>
+                        <svg
+                          className="w-4 h-4 text-gray-400 group-hover:text-[#04DA8D] transition-colors duration-200"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 5l7 7-7 7"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
