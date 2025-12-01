@@ -1,16 +1,16 @@
 import Image from "next/image";
 
 const performanceData = [
-  {
-    title: "Delivery Performance",
-    buttonText: "view graph",
-    imageSrc: "/img/chart-view/performance.png",
-  },
   // {
-  //   title: "Parcel Summary",
-  //   buttonText: "view summary",
-  //   imageSrc: "/img/chart-view/parcel.png",
+  //   title: "Delivery Performance",
+  //   buttonText: "view graph",
+  //   imageSrc: "/img/chart-view/performance.png",
   // },
+  {
+    title: "Parcel Summary",
+    buttonText: "view summary",
+    imageSrc: "/img/chart-view/parcel.png",
+  },
 ];
 
 const ChartView = () => {
