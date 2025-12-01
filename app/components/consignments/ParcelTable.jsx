@@ -9,7 +9,8 @@ import { Calendar } from 'lucide-react';
 const tabs = [
   { label: 'All', value: 'All' },
   { label: 'List by Date', value: 'List by Date' },
-  { label: 'Rider Assign', value: 'Pending' },
+  // { label: 'Rider Assign', value: 'Pending' },
+  { label: 'Rider Assign', value: 'Rider Assign' },
   { label: 'Approval Pending', value: 'Approval Pending' },
   { label: 'Partially Delivered', value: 'Partially Delivered' },
   { label: 'Cancelled', value: 'Cancelled' },

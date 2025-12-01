@@ -6,16 +6,17 @@ const performanceData = [
     buttonText: "view graph",
     imageSrc: "/img/chart-view/performance.png",
   },
-  {
-    title: "Parcel Summary",
-    buttonText: "view summary",
-    imageSrc: "/img/chart-view/parcel.png",
-  },
+  // {
+  //   title: "Parcel Summary",
+  //   buttonText: "view summary",
+  //   imageSrc: "/img/chart-view/parcel.png",
+  // },
 ];
 
 const ChartView = () => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-2">
+    <div className="grid grid-cols-1  pb-2 mt-5
+    ">
       {performanceData.map((item, index) => (
         <div
           key={index}

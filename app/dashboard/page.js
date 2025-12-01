@@ -43,7 +43,7 @@ const DashbordPage = () => {
       )}
       <TextCard />
       {/* <CardTitle /> */}
-      <AddImage />
+      {/* <AddImage /> */}
       <ChartView />
     </div>
   );

@@ -3,23 +3,24 @@ import Link from 'next/link';
 
 const textCardData = [
   { label: 'Consignments', href: '/dashboard/consignments?status=All' },
-  { label: 'Rescheduled', href: '/dashboard/consignments?status=Rescheduled' },
+  { label: 'List by Date', href: '/dashboard/consignments?status=List by Date' },
   {
-    label: 'Return Reach To Merchant',
-    href: '/dashboard/consignments?status=Return Reach To Merchant',
+    label: 'Rider Assign',
+    href: '/dashboard/consignments?status=Rider Assign',
   },
   {
-    label: 'Payment Completed',
-    href: '/dashboard/consignments?status=Payment Completed',
+    label: 'Approval Pending',
+    href: '/dashboard/consignments?status=Approval Pending',
   },
   {
-    label: 'Assigned Pickup Rider',
-    href: '/dashboard/consignments?status=Assigned Pickup Rider',
+    label: 'Partially Delivered',
+    href: '/dashboard/consignments?status=Partially Delivered',
   },
   {
-    label: 'Order Placed',
-    href: '/dashboard/consignments?status=Order Placed',
+    label: 'Cancelled',
+    href: '/dashboard/consignments?status=Cancelled',
   },
+ 
 ];
 
 const TextCard = () => {
