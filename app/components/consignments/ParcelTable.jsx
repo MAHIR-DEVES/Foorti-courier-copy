@@ -19,7 +19,7 @@ const tabs = [
 ];
 
 const statusMapping = {
-  Pending: [
+  'Rider Assign': [
     'Pending',
     'Reschedule Order',
     'Rescheduled',
