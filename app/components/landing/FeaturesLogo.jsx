@@ -8,38 +8,34 @@ const logoData = [
   },
   {
     type: "logo",
-    logo: "/img/landing/color-logo-6.png",
+    logo: "/img/landing/1.jpg",
     alt: "RANGS",
     name: "RANGS",
   },
   {
     type: "logo",
-    logo: "/img/landing/color-logo-3.png",
+    logo: "/img/landing/2.jpg",
     alt: "claraz",
   },
   {
     type: "logo",
-    logo: "/img/landing/color-logo-7.png",
+    logo: "/img/landing/3.jpeg",
     alt: "ojler@sap",
   },
-  {
-    type: "title",
-    text: "TOP SMES",
-    alt: "Top SMEs Section",
-  },
+  
   {
     type: "logo",
-    logo: "/img/landing/color-logo-3.png",
+    logo: "/img/landing/4.png",
     alt: "othoba",
   },
   {
     type: "logo",
-    logo: "/img/landing/color-logo-7.png",
+    logo: "/img/landing/5.png",
     alt: "SME 2",
   },
   {
     type: "logo",
-    logo: "/img/landing/color-logo-6.png",
+    logo: "/img/landing/7.png",
     alt: "SME 3",
   },
 ];

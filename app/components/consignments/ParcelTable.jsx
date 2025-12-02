@@ -322,7 +322,7 @@ const ParcelTable = () => {
                             <th className="px-6 py-4">Phone</th>
                             <th className="px-6 py-4">Charge</th>
                             <th className="px-6 py-4">Collection</th>
-                            <th className="px-6 py-4">Remarks</th>
+                            <th className="px-6 py-4">Reason</th>
                             <th className="px-6 py-4">Action</th>
                           </tr>
                         </thead>
@@ -350,7 +350,7 @@ const ParcelTable = () => {
                               <td className="px-6 py-4">{order.delivery}</td>
                               <td className="px-6 py-4">{order.collection}</td>
                               <td className="px-6 py-4">
-                                {order.remarks || '-'}
+                                {order?.reason_name || '-'}
                               </td>
                               <td className="px-6 py-4">
                                 <Link

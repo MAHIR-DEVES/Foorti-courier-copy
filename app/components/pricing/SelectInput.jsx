@@ -6,21 +6,17 @@ import { IoChevronDown } from 'react-icons/io5';
 const optionsMap = {
   From: ['Dhaka'],
   Destination: ['Dhaka'],
-  Category: ['Electronics', 'Clothing', 'Furniture'],
-  'Service Type': ['Express', 'Standard', 'Economy'],
+  Category: ['All Category'],
+  'Service Type': ['Reguler'],
 };
 
 // Price mapping
 const priceMap = {
   Category: {
-    Electronics: 30,
-    Clothing: 30,
-    Furniture: 30,
+    "All Category": 60, // 60 TK per KG (Dhaka → Dhaka)
   },
   'Service Type': {
-    Express: 0.8,
-    Standard: 1,
-    Economy: 1.5,
+    Reguler: 1, // no extra charge
   },
 };
 
@@ -45,6 +41,7 @@ const Dropdown = ({ label, options, setSelected }) => {
       <label className="block mb-1 text-md font-medium text-secondary">
         {label}
       </label>
+
       <button
         type="button"
         className="bg-gray-50 border border-gray-300 rounded-md w-full px-3.5 py-2.5 flex items-center justify-between cursor-pointer font-medium text-sm"
@@ -52,11 +49,11 @@ const Dropdown = ({ label, options, setSelected }) => {
       >
         {content || `Select ${label}`}
         <IoChevronDown
-          className={`${
-            isActive ? 'rotate-180' : ''
-          } transition-transform duration-300`}
+          className={`${isActive ? 'rotate-180' : ''} transition-transform duration-300`}
         />
       </button>
+
+      {/* Dropdown Items */}
       <div
         ref={dropdownRef}
         className={`absolute top-14 left-0 right-0 bg-white rounded-xl shadow-lg transition-all duration-300 ease-in-out ${
@@ -81,7 +78,7 @@ const Dropdown = ({ label, options, setSelected }) => {
   );
 };
 
-// Weight input
+// Weight Input
 const WeightInput = ({ value, setValue }) => (
   <div className="w-full mt-1">
     <label className="block mb-1 text-sm font-medium text-secondary">
@@ -89,7 +86,7 @@ const WeightInput = ({ value, setValue }) => (
     </label>
     <input
       type="number"
-      min="0"
+      min="1"
       className="w-full px-3 py-2 border border-gray-300 bg-gray-50 rounded-md focus:outline-none"
       placeholder="Enter weight in KG"
       value={value}
@@ -98,7 +95,7 @@ const WeightInput = ({ value, setValue }) => (
   </div>
 );
 
-// Main component
+// Main Component
 const SelectInput = () => {
   const [selectedOptions, setSelectedOptions] = useState({
     From: '',
@@ -109,18 +106,19 @@ const SelectInput = () => {
 
   const [weight, setWeight] = useState('');
 
-  // Price calculation
+  // Price calculation (1 KG = 60 TK)
   const calculatePrice = () => {
-    const categoryPrice = priceMap.Category[selectedOptions.Category] || 0;
+    const perKgPrice = priceMap.Category[selectedOptions.Category] || 0;
     const serviceMultiplier =
       priceMap['Service Type'][selectedOptions['Service Type']] || 1;
     const weightValue = parseFloat(weight) || 0;
 
-    return categoryPrice * serviceMultiplier * weightValue;
+    return perKgPrice * serviceMultiplier * weightValue;
   };
 
   return (
     <div>
+      {/* Dropdown Group */}
       <div className="p-4 md:p-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {Object.entries(optionsMap).map(([label, options]) => (
           <Dropdown
@@ -135,10 +133,11 @@ const SelectInput = () => {
         <WeightInput value={weight} setValue={setWeight} />
       </div>
 
+      {/* Price Display */}
       <div className="flex justify-center mt-4">
         <button
           type="button"
-          className="bg-gray-50 border border-gray-300 rounded-md px-3.5 py-2.5 flex items-center justify-center cursor-pointer font-medium text-xl"
+          className="bg-gray-50 border border-gray-300 rounded-md px-5 py-3 flex items-center justify-center cursor-pointer font-semibold text-xl"
         >
           {calculatePrice().toFixed(2)} TK
         </button>

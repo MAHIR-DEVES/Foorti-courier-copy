@@ -8,6 +8,7 @@ const TrackParcel = () => {
   const tParcel = useTranslations('homePage.trackParcelSection');
   const [query, setQuery] = useState('');
   const [parcel, setParcel] = useState({});
+  
   const [error, setError] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false); // modal state
 

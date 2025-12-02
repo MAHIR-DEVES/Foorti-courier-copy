@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 const Topbar = ({ toggleSidebar, toggleMobileSearch, showMobileSearch }) => {
   const [query, setQuery] = useState('');
   const [parcel, setParcel] = useState(null);
+console.log(parcel);
 
   const [balanceClicked, setBalanceClicked] = useState(false);
   const [error, setError] = useState(null);
