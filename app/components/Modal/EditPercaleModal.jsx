@@ -1,5 +1,6 @@
 'use client';
 import React, { useState } from 'react';
+import { toast } from 'react-toastify';
 
 const EditPercaleModal = ({ order, onClose }) => {
   if (!order) return null;
@@ -50,10 +51,10 @@ const EditPercaleModal = ({ order, onClose }) => {
       const data = await res.json();
 
       if (res.ok) {
-        alert('Parcel updated successfully!');
+        toast.success('Parcel updated successfully!');
         onClose();
       } else {
-        alert(data.message || 'Update failed!');
+        toast.error(data.message || 'Update failed!');
       }
     } catch (error) {
       console.error('Error:', error);
