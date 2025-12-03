@@ -3,7 +3,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
-const DeliveryForm = () => {
+const DeliveryForm = ({ active }) => {
   const router = useRouter();
   const [formData, setFormData] = useState({
     phone: '',
@@ -118,12 +118,13 @@ const DeliveryForm = () => {
         category: '',
         weight: formData.weight,
         collection: formData.cod || '',
-        imp: 'Regular',
+        imp: active,
         area: formData.area,
         order_id: formData.invoice,
         is_exchange: 1,
         isPartial: 1,
       };
+      console.log(finalData);
       // is_exchange: formData.exchange ? 1 : 0,
       // isPartial: formData.partial ? 1 : 0,
 

@@ -5,6 +5,7 @@ import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import Link from 'next/link';
 import Loading from '@/app/loading';
 import { Calendar } from 'lucide-react';
+import EditPercaleModal from '../Modal/EditPercaleModal';
 
 const tabs = [
   { label: 'All', value: 'All' },
@@ -64,6 +65,9 @@ const groupByDate = orders => {
 const ParcelTable = () => {
   const searchParams = useSearchParams();
   const queryStatus = searchParams.get('status') || 'All';
+
+  // parcel edit
+  const [selectedOrder, setSelectedOrder] = useState(null);
 
   const [activeTab, setActiveTab] = useState(queryStatus);
   const [orders, setOrders] = useState([]);
@@ -300,7 +304,7 @@ const ParcelTable = () => {
                     <Calendar className="w-5 h-5 mr-2 text-blue-600" />
                     {date}
                     <span className="ml-3 text-sm font-normal text-gray-600 bg-white px-2 py-1 rounded-full">
-                      {groupedOrders[date].length} orders
+                      {groupedOrders[date].length} Parcel
                     </span>
                   </h2>
                   <button
@@ -359,6 +363,35 @@ const ParcelTable = () => {
                                 >
                                   View Details
                                 </Link>
+                                <button
+                                  onClick={() => setSelectedOrder(order)}
+                                  disabled={[
+                                    'Successfully Delivered',
+                                    'Delivered Amount Collected from Branch',
+                                    'Delivered Amount Send to Fulfillment',
+                                    'Payment Processing',
+                                    'Payment Processing Complete',
+                                    'Payment Completed',
+                                  ].includes(order?.status)}
+                                  className={`px-3 ml-2 py-1 rounded text-white 
+                                                         ${
+                                                           [
+                                                             'Successfully Delivered',
+                                                             'Delivered Amount Collected from Branch',
+                                                             'Delivered Amount Send to Fulfillment',
+                                                             'Payment Processing',
+                                                             'Payment Processing Complete',
+                                                             'Payment Completed',
+                                                           ].includes(
+                                                             order?.status
+                                                           )
+                                                             ? 'bg-gray-400 cursor-not-allowed'
+                                                             : 'bg-blue-600'
+                                                         }
+                                  `}
+                                >
+                                  Edit
+                                </button>
                               </td>
                             </tr>
                           ))}
@@ -467,6 +500,35 @@ const ParcelTable = () => {
                                   >
                                     View
                                   </Link>
+                                  {/* <button
+                                    onClick={() => setSelectedOrder(payment)}
+                                    disabled={[
+                                      'Successfully Delivered',
+                                      'Delivered Amount Collected from Branch',
+                                      'Delivered Amount Send to Fulfillment',
+                                      'Payment Processing',
+                                      'Payment Processing Complete',
+                                      'Payment Completed',
+                                    ].includes(payment?.status)}
+                                    className={`px-3 ml-2 py-1 rounded text-white 
+                                                         ${
+                                                           [
+                                                             'Successfully Delivered',
+                                                             'Delivered Amount Collected from Branch',
+                                                             'Delivered Amount Send to Fulfillment',
+                                                             'Payment Processing',
+                                                             'Payment Processing Complete',
+                                                             'Payment Completed',
+                                                           ].includes(
+                                                             payment?.status
+                                                           )
+                                                             ? 'bg-gray-400 cursor-not-allowed'
+                                                             : 'bg-blue-600'
+                                                         }
+                                  `}
+                                  >
+                                    Edit
+                                  </button> */}
                                 </td>
                               </tr>
                             ))}
@@ -501,7 +563,7 @@ const ParcelTable = () => {
                       <Calendar className="w-5 h-5 mr-2 text-blue-600" />
                       {date} (Delivered)
                       <span className="ml-3 text-sm text-gray-600 bg-white px-2 py-1 rounded-full">
-                        {grouped[date].length} items
+                        {grouped[date].length} Delivered parcel
                       </span>
                     </h2>
                     <button
@@ -575,6 +637,35 @@ const ParcelTable = () => {
                                   >
                                     View
                                   </Link>
+                                  <button
+                                    onClick={() => setSelectedOrder(order)}
+                                    disabled={[
+                                      'Successfully Delivered',
+                                      'Delivered Amount Collected from Branch',
+                                      'Delivered Amount Send to Fulfillment',
+                                      'Payment Processing',
+                                      'Payment Processing Complete',
+                                      'Payment Completed',
+                                    ].includes(order?.status)}
+                                    className={`px-3 ml-2 py-1 rounded text-white 
+                                                         ${
+                                                           [
+                                                             'Successfully Delivered',
+                                                             'Delivered Amount Collected from Branch',
+                                                             'Delivered Amount Send to Fulfillment',
+                                                             'Payment Processing',
+                                                             'Payment Processing Complete',
+                                                             'Payment Completed',
+                                                           ].includes(
+                                                             order?.status
+                                                           )
+                                                             ? 'bg-gray-400 cursor-not-allowed'
+                                                             : 'bg-blue-600'
+                                                         }
+                                  `}
+                                  >
+                                    Edit
+                                  </button>
                                 </td>
                               </tr>
                             ))}
@@ -589,80 +680,112 @@ const ParcelTable = () => {
           })()
         ) : (
           // normal table
-          <table className="w-full table-auto text-[19px] text-left text-gray-700">
-            <thead className="border-b border-gray bg-gradient-to-r from-blue-50 to-indigo-50">
-              <tr className="text-primary">
-                <th className="px-4 py-3">SL#</th>
-                <th className="px-4 py-3">Create Date</th>
-                <th className="px-4 py-3">ID</th>
-                <th className="px-4 py-3">Customer Name</th>
-                <th className="px-4 py-3">Customer Phone</th>
-                <th className="px-4 py-3">Charge</th>
-                <th className="px-4 py-3">Collection</th>
-                <th className="px-4 py-3">Remarks</th>
-                <th className="px-4 py-3">Details</th>
-              </tr>
-            </thead>
-            <tbody>
-              {paginatedOrders.length === 0 ? (
-                <tr>
-                  <td colSpan={10} className="px-4 py-3 text-center">
-                    No data found.
-                  </td>
+          <>
+            <table className="w-full table-auto text-[19px] text-left text-gray-700">
+              <thead className="border-b border-gray bg-gradient-to-r from-blue-50 to-indigo-50">
+                <tr className="text-primary">
+                  <th className="px-4 py-3">SL#</th>
+                  <th className="px-4 py-3">Create Date</th>
+                  <th className="px-4 py-3">ID</th>
+                  <th className="px-4 py-3">Customer Name</th>
+                  <th className="px-4 py-3">Customer Phone</th>
+                  <th className="px-4 py-3">Charge</th>
+                  <th className="px-4 py-3">Collection</th>
+                  <th className="px-4 py-3">Remarks</th>
+                  <th className="px-4 py-3">Details</th>
                 </tr>
-              ) : (
-                paginatedOrders.map((order, idx) => (
-                  <tr
-                    className=" border-b-2 border-gray-200"
-                    key={`${order.id}-${idx}`}
-                  >
-                    <td className="px-4 py-3">{startIndex + idx + 1}</td>
-                    <td className="px-6 py-4">
-                      {order?.order_create_date
-                        ? new Date(order.order_create_date).toLocaleString(
-                            'en-US',
-                            {
-                              hour: 'numeric',
-                              minute: 'numeric',
-                              second: 'numeric',
-                              hour12: true,
-                              year: 'numeric',
-                              month: '2-digit',
-                              day: '2-digit',
-                            }
-                          )
-                        : '-'}
-                    </td>
-
-                    {/* <td className="px-4 py-3">{order.}</td> */}
-                    <td className="px-4 py-3">
-                      <Link
-                        href={`/dashboard/consignments/${order.tracking_id}`}
-                        className="text-blue-600"
-                      >
-                        #{order.tracking_id}
-                      </Link>
-                    </td>
-                    <td className="px-4 py-3">{order.customer_name}</td>
-                    <td className="px-4 py-3">{order.customer_phone}</td>
-                    <td className="px-4 py-3">{order.delivery}</td>
-                    <td className="px-4 py-3">{order.collection}</td>
-                    <td className="px-4 py-3">
-                      {order.remarks ? order.remarks : '-'}
-                    </td>
-                    <td className="px-4 py-3">
-                      <Link
-                        href={`/dashboard/consignments/${order.tracking_id}`}
-                        className="px-3 py-1 bg-blue-600 text-white rounded"
-                      >
-                        View Details
-                      </Link>
+              </thead>
+              <tbody>
+                {paginatedOrders.length === 0 ? (
+                  <tr>
+                    <td colSpan={10} className="px-4 py-3 text-center">
+                      No data found.
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : (
+                  paginatedOrders.map((order, idx) => (
+                    <tr
+                      className=" border-b-2 border-gray-200"
+                      key={`${order.id}-${idx}`}
+                    >
+                      <td className="px-4 py-3">{startIndex + idx + 1}</td>
+                      <td className="px-6 py-4">
+                        {order?.order_create_date
+                          ? new Date(order.order_create_date).toLocaleString(
+                              'en-US',
+                              {
+                                hour: 'numeric',
+                                minute: 'numeric',
+                                second: 'numeric',
+                                hour12: true,
+                                year: 'numeric',
+                                month: '2-digit',
+                                day: '2-digit',
+                              }
+                            )
+                          : '-'}
+                      </td>
+
+                      {/* <td className="px-4 py-3">{order.}</td> */}
+                      <td className="px-4 py-3">
+                        <Link
+                          href={`/dashboard/consignments/${order.tracking_id}`}
+                          className="text-blue-600"
+                        >
+                          #{order.tracking_id}
+                        </Link>
+                      </td>
+                      <td className="px-4 py-3">{order.customer_name}</td>
+                      <td className="px-4 py-3">{order.customer_phone}</td>
+                      <td className="px-4 py-3">{order.delivery}</td>
+                      <td className="px-4 py-3">{order.collection}</td>
+                      <td className="px-4 py-3">
+                        {order.remarks ? order.remarks : '-'}
+                      </td>
+                      <td className="px-4 py-3">
+                        <Link
+                          href={`/dashboard/consignments/${order.tracking_id}`}
+                          className="px-3 py-1 bg-blue-600 text-white rounded"
+                        >
+                          View Details
+                        </Link>
+                        <button
+                          onClick={() => setSelectedOrder(order)}
+                          disabled={[
+                            'Successfully Delivered',
+                            'Delivered Amount Collected from Branch',
+                            'Delivered Amount Send to Fulfillment',
+                            'Payment Processing',
+                            'Payment Processing Complete',
+                            'Payment Completed',
+                          ].includes(order?.status)}
+                          className={`px-3 ml-2 py-1 rounded text-white 
+                                                         ${
+                                                           [
+                                                             'Successfully Delivered',
+                                                             'Delivered Amount Collected from Branch',
+                                                             'Delivered Amount Send to Fulfillment',
+                                                             'Payment Processing',
+                                                             'Payment Processing Complete',
+                                                             'Payment Completed',
+                                                           ].includes(
+                                                             order?.status
+                                                           )
+                                                             ? 'bg-gray-400 cursor-not-allowed'
+                                                             : 'bg-blue-600'
+                                                         }
+                                  `}
+                        >
+                          Edit
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+            {/* === Modal Open হলে Show হবে === */}
+          </>
         )}
       </div>
 
@@ -698,6 +821,12 @@ const ParcelTable = () => {
             </button>
           </div>
         )}
+      {selectedOrder && (
+        <EditPercaleModal
+          order={selectedOrder}
+          onClose={() => setSelectedOrder(null)}
+        />
+      )}
     </div>
   );
 };

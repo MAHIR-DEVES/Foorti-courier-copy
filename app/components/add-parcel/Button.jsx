@@ -3,12 +3,10 @@
 import Link from 'next/link';
 import { useState } from 'react';
 
-const Button = () => {
-  const [active, setActive] = useState('Regular');
-
+const Button = ({ setActive, active }) => {
   const buttonList = [
     { label: 'Regular', href: '/dashboard/add-parcel' },
-    { label: 'Express', href: '/dashboard/add-parcel' },
+    { label: 'Urgent', href: '/dashboard/add-parcel' },
   ];
 
   return (
