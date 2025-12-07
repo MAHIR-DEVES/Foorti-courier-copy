@@ -12,7 +12,8 @@ const DetailsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  console.log(consignment);
+  const parcelDetails = consignment?.order_status[0];
+  // const parcelDate = parcelDetails?.date;
 
   useEffect(() => {
     if (!trackingId) return;
@@ -104,18 +105,16 @@ const DetailsPage = () => {
 
           <div className="text-right text-xl">
             <p>
-              Created at:{' '}
-              {consignment?.data?.user?.created_at
-                ? new Date(
-                    consignment?.data?.user?.created_at.replace(' ', 'T')
-                  ).toLocaleString('en-GB', {
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    second: '2-digit',
+              Created at:
+              {parcelDetails?.date
+                ? new Date(parcelDetails.date).toLocaleString('en-US', {
+                    hour: 'numeric',
+                    minute: 'numeric',
+                    second: 'numeric',
                     hour12: true,
+                    year: 'numeric',
+                    day: '2-digit',
+                    month: '2-digit',
                   })
                 : '-'}
             </p>
@@ -160,10 +159,17 @@ const DetailsPage = () => {
                         {/* Date - Left Side */}
                         <div className="text-right w-2/5 ">
                           <p className="text-sm text-gray-700">
-                            {new Date(update.date).toLocaleTimeString('en-GB')}
-                            <span className="mr-3"></span>
-
-                            {new Date(update.date).toLocaleDateString('en-GB')}
+                            {update?.date
+                              ? new Date(update.date).toLocaleString('en-US', {
+                                  hour: 'numeric',
+                                  minute: 'numeric',
+                                  second: 'numeric',
+                                  hour12: true,
+                                  year: 'numeric',
+                                  month: '2-digit',
+                                  day: '2-digit',
+                                })
+                              : '-'}
                           </p>
                         </div>
 
