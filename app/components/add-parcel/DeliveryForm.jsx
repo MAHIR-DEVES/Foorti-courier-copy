@@ -105,6 +105,11 @@ const DeliveryForm = ({ active }) => {
 
   const handleSubmit = async e => {
     e.preventDefault();
+    // ✅ Phone number validation (must be exactly 11 digits)
+    if (!/^\d{11}$/.test(formData.phone)) {
+      toast.error('Please enter a valid phone number with 11 digit');
+      return;
+    }
 
     try {
       const finalData = {

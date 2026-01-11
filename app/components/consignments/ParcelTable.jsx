@@ -10,7 +10,8 @@ import EditPercaleModal from '../Modal/EditPercaleModal';
 const tabs = [
   { label: 'All', value: 'All' },
   { label: 'List by Date', value: 'List by Date' },
-  // { label: 'Rider Assign', value: 'Pending' },
+  { label: 'In Preview', value: 'In Preview' },
+
   { label: 'Rider Assign', value: 'Rider Assign' },
   { label: 'Approval Pending', value: 'Approval Pending' },
   { label: 'Partially Delivered', value: 'Partially Delivered' },
@@ -20,6 +21,7 @@ const tabs = [
 ];
 
 const statusMapping = {
+  'In Preview': ['Assigned Pickup Rider', 'Order Placed', 'Pickup Done'],
   'Rider Assign': [
     'Pending',
     'Reschedule Order',
@@ -500,35 +502,6 @@ const ParcelTable = () => {
                                   >
                                     View
                                   </Link>
-                                  {/* <button
-                                    onClick={() => setSelectedOrder(payment)}
-                                    disabled={[
-                                      'Successfully Delivered',
-                                      'Delivered Amount Collected from Branch',
-                                      'Delivered Amount Send to Fulfillment',
-                                      'Payment Processing',
-                                      'Payment Processing Complete',
-                                      'Payment Completed',
-                                    ].includes(payment?.status)}
-                                    className={`px-3 ml-2 py-1 rounded text-white 
-                                                         ${
-                                                           [
-                                                             'Successfully Delivered',
-                                                             'Delivered Amount Collected from Branch',
-                                                             'Delivered Amount Send to Fulfillment',
-                                                             'Payment Processing',
-                                                             'Payment Processing Complete',
-                                                             'Payment Completed',
-                                                           ].includes(
-                                                             payment?.status
-                                                           )
-                                                             ? 'bg-gray-400 cursor-not-allowed'
-                                                             : 'bg-blue-600'
-                                                         }
-                                  `}
-                                  >
-                                    Edit
-                                  </button> */}
                                 </td>
                               </tr>
                             ))}
