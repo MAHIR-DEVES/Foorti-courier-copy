@@ -106,7 +106,7 @@ const EditPercaleModal = ({ order, onClose }) => {
           </div>
 
           {/* COD Amount */}
-          <div>
+          {/* <div>
             <label className="block font-semibold mb-1">COD Amount</label>
             <input
               type="number"
@@ -114,7 +114,7 @@ const EditPercaleModal = ({ order, onClose }) => {
               onChange={e => setCollection(e.target.value)}
               className="w-full border border-gray-200 rounded px-3 py-2"
             />
-          </div>
+          </div> */}
 
           {/* Customer Address */}
           <div>
