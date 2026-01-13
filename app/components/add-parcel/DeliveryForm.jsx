@@ -185,11 +185,11 @@ const DeliveryForm = ({ active }) => {
             Phone#
           </label>
           <input
-            type="text"
+            type="number"
             name="phone"
             value={formData.phone}
             onChange={handleChange}
-            placeholder="Type Phone Number"
+            placeholder="Please enter a valid phone number with 11 digit"
             className="w-full p-3 border border-gray-300 rounded-md focus:outline-none"
           />
         </div>
