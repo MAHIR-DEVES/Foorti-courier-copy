@@ -12,7 +12,7 @@ const tabs = [
   { label: 'List by Date', value: 'List by Date' },
   { label: 'In Preview', value: 'In Preview' },
 
-  { label: 'Rider Assign', value: 'Rider Assign' },
+  { label: 'Pending', value: 'Pending' },
   { label: 'Approval Pending', value: 'Approval Pending' },
   { label: 'Partially Delivered', value: 'Partially Delivered' },
   { label: 'Cancelled', value: 'Cancelled' },
@@ -22,12 +22,7 @@ const tabs = [
 
 const statusMapping = {
   'In Preview': ['Assigned Pickup Rider', 'Order Placed', 'Pickup Done'],
-  'Rider Assign': [
-    'Pending',
-    'Reschedule Order',
-    'Rescheduled',
-    'Assigned To Delivery Rider',
-  ],
+  Pending: ['Updated as Pending'],
   'Approval Pending': [
     'Assigned Pickup Rider',
     'Order Placed',
