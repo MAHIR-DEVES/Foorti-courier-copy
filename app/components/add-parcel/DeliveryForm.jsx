@@ -22,7 +22,6 @@ const DeliveryForm = ({ active }) => {
 
   const [districts, setDistricts] = useState([]);
   const [areas, setAreas] = useState([]);
-  const [weights, setWeights] = useState([]);
 
   // fetch Districts
   useEffect(() => {
@@ -60,24 +59,6 @@ const DeliveryForm = ({ active }) => {
     };
     fetchAreas();
   }, [formData.districtId]);
-
-  // fetch Weights
-  useEffect(() => {
-    const fetchWeight = async () => {
-      try {
-        const res = await fetch(
-          'https://admin.merchantfcservice.com/api/weights'
-        );
-        const data = await res.json();
-        if (data.Status) {
-          setWeights(data.data);
-        }
-      } catch (error) {
-        console.error('Error fetching weights:', error);
-      }
-    };
-    fetchWeight();
-  }, []);
 
   // handle input changes
   const handleChange = e => {
@@ -313,19 +294,14 @@ const DeliveryForm = ({ active }) => {
           <label className="block text-md font-medium text-secondary mb-1">
             Weight
           </label>
-          <select
+          <input
+            type="number"
             name="weight"
             value={formData.weight}
             onChange={handleChange}
+            placeholder="Please enter your Weight"
             className="w-full p-3 border border-gray-300 rounded-md focus:outline-none"
-          >
-            <option value="">Select Weight</option>
-            {weights.map(weight => (
-              <option key={weight.id} value={weight.title}>
-                {weight.title}
-              </option>
-            ))}
-          </select>
+          />
         </div>
       </div>
       <div className="flex flex-col justify-between">
