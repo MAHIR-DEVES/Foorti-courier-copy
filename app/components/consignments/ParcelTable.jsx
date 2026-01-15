@@ -68,6 +68,7 @@ const ParcelTable = () => {
 
   const [activeTab, setActiveTab] = useState(queryStatus);
   const [orders, setOrders] = useState([]);
+  console.log(orders);
   const [payments, setPayment] = useState([]);
   const [delivered, setDelivered] = useState([]);
 

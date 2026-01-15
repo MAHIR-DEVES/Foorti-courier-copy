@@ -4,6 +4,7 @@ import { toast } from 'react-toastify';
 
 const EditPercaleModal = ({ order, onClose }) => {
   if (!order) return null;
+  console.log(order);
 
   const [customerName, setCustomerName] = useState(order.customer_name || '');
   const [customerPhone, setCustomerPhone] = useState(

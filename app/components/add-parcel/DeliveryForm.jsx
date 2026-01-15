@@ -7,7 +7,7 @@ const DeliveryForm = ({ active }) => {
   const router = useRouter();
   const [formData, setFormData] = useState({
     phone: '',
-    cod: '',
+    cod_amount: '',
     name: '',
     invoice: '',
     address: '',
@@ -100,10 +100,10 @@ const DeliveryForm = ({ active }) => {
         customer_phone: formData.phone,
         pickup_date: '',
         pckup_time: '',
-        remarks: formData.note,
+        note: formData.note,
         category: '',
         weight: formData.weight,
-        collection: formData.cod || '',
+        cod_amount: formData.cod_amount || '',
         imp: active,
         area: formData.area,
         order_id: formData.invoice,
@@ -139,7 +139,7 @@ const DeliveryForm = ({ active }) => {
         router.push('/dashboard/consignments');
         setFormData({
           phone: '',
-          cod: '',
+          cod_amount: '',
           name: '',
           invoice: '',
           address: '',
@@ -180,8 +180,8 @@ const DeliveryForm = ({ active }) => {
           </label>
           <input
             type="number"
-            name="cod"
-            value={formData.cod}
+            name="cod_amount"
+            value={formData.cod_amount ?? ''}
             onChange={handleChange}
             placeholder="COD Amount"
             className="w-full p-3 border border-gray-300 rounded-md focus:outline-none"
