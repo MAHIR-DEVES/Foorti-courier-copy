@@ -3,10 +3,18 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { FaCheckCircle, FaPhoneAlt } from 'react-icons/fa';
+import NoteModal from '@/app/components/consignments/NoteModal';
 
 const DetailsPage = () => {
   const params = useParams();
   const trackingId = params.trakingId;
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [note, setNote] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [noteError, setNoteError] = useState(null);
+
+  console.log(noteError);
 
   const [consignment, setConsignment] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -28,7 +36,7 @@ const DetailsPage = () => {
             headers: {
               Authorization: `Bearer ${token}`,
             },
-          }
+          },
         );
 
         if (!res.ok) {
@@ -57,19 +65,50 @@ const DetailsPage = () => {
       <div className=" md:flex justify-between items-center mb-4">
         <h2 className="text-lg "></h2>
         <div className="flex flex-wrap justify-end gap-2 pt-1.5 md:pt-0">
-          <button className="button-primary cursor-pointer text-white px-3 py-1 rounded">
-            Open Support Ticket
+          <button
+            className="button-primary cursor-pointer text-white px-2 py-1 rounded"
+            onClick={() => setIsModalOpen(true)}
+          >
+            Note
           </button>
+
           <button className="bg-blue-500 cursor-pointer text-white px-3 py-1 rounded">
             Invoice
           </button>
           <button className="bg-indigo-500 cursor-pointer text-white px-3 py-1 rounded">
             Label
           </button>
-          {/* <button className="bg-gray-700 cursor-pointer text-white px-3 py-1 rounded">
-            Edit
-          </button> */}
         </div>
+        <NoteModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSave={async note => {
+            const stored = localStorage.getItem('token');
+            const token = stored ? JSON.parse(stored).token : null;
+
+            const res = await fetch(
+              'https://admin.merchantfcservice.com/api/note',
+              {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                  id: consignment?.data?.tracking_id,
+                  note,
+                }),
+              },
+            );
+
+            if (!res.ok) {
+              const errData = await res.json();
+              throw new Error(errData.message || 'Failed to save note');
+            }
+
+            return await res.json();
+          }}
+        />
       </div>
       <div className=" bg-white p-6 rounded-md">
         {/* Info Section */}

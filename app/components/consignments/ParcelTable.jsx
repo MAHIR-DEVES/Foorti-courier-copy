@@ -22,7 +22,7 @@ const tabs = [
 
 const statusMapping = {
   'In Preview': ['Assigned Pickup Rider', 'Order Placed', 'Pickup Done'],
-  Pending: ['Updated as Pending'],
+  Pending: ['Updated as Pending', 'Assigned To Delivery Rider'],
   'Approval Pending': [
     'Assigned Pickup Rider',
     'Order Placed',
@@ -92,7 +92,7 @@ const ParcelTable = () => {
 
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_MERCHANT_API_KEY}/confirm-orders-list`,
-          { method: 'GET', headers: { Authorization: `Bearer ${token}` } }
+          { method: 'GET', headers: { Authorization: `Bearer ${token}` } },
         );
 
         if (!response.ok) throw new Error('Failed to fetch orders');
@@ -120,7 +120,7 @@ const ParcelTable = () => {
 
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_MERCHANT_API_KEY}/merchant-payment-history`,
-          { method: 'GET', headers: { Authorization: `Bearer ${token}` } }
+          { method: 'GET', headers: { Authorization: `Bearer ${token}` } },
         );
 
         if (!response.ok) throw new Error('Failed to fetch payments');
@@ -148,7 +148,7 @@ const ParcelTable = () => {
 
         const response = await fetch(
           `https://admin.merchantfcservice.com/api/order-delivered`,
-          { method: 'GET', headers: { Authorization: `Bearer ${token}` } }
+          { method: 'GET', headers: { Authorization: `Bearer ${token}` } },
         );
 
         if (!response.ok) throw new Error('Failed to fetch delivered');
@@ -180,7 +180,7 @@ const ParcelTable = () => {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedOrders = filteredOrders.slice(
     startIndex,
-    startIndex + itemsPerPage
+    startIndex + itemsPerPage,
   );
 
   const handlePreviousPageGroup = () => {
@@ -216,7 +216,7 @@ const ParcelTable = () => {
           }`}
         >
           {i}
-        </button>
+        </button>,
       );
     }
     return pages;
@@ -226,18 +226,18 @@ const ParcelTable = () => {
     activeTab === 'List by Date'
       ? groupByDate(filteredOrders)
       : activeTab === 'Delivered'
-      ? groupByDate(
-          filteredOrders.filter(order =>
-            statusMapping['Delivered'].includes(order.status)
+        ? groupByDate(
+            filteredOrders.filter(order =>
+              statusMapping['Delivered'].includes(order.status),
+            ),
           )
-        )
-      : activeTab === 'Cancelled'
-      ? groupByDate(
-          filteredOrders.filter(order =>
-            statusMapping['Cancelled'].includes(order.status)
-          )
-        )
-      : {};
+        : activeTab === 'Cancelled'
+          ? groupByDate(
+              filteredOrders.filter(order =>
+                statusMapping['Cancelled'].includes(order.status),
+              ),
+            )
+          : {};
 
   useEffect(() => {
     if (
@@ -381,7 +381,7 @@ const ParcelTable = () => {
                                                              'Payment Processing Complete',
                                                              'Payment Completed',
                                                            ].includes(
-                                                             order?.status
+                                                             order?.status,
                                                            )
                                                              ? 'bg-gray-400 cursor-not-allowed'
                                                              : 'bg-blue-600'
@@ -465,7 +465,7 @@ const ParcelTable = () => {
                                       minute: '2-digit',
                                       second: '2-digit',
                                       hour12: true,
-                                    }
+                                    },
                                   )}
                                 </td>
                                 <td className="px-6 py-4 text-blue-600 font-medium">
@@ -480,16 +480,16 @@ const ParcelTable = () => {
                                     'Payment Received By Merchant'
                                       ? 'text-green-600'
                                       : payment.status === 'Payment Processing'
-                                      ? 'text-yellow-600'
-                                      : 'text-red-600'
+                                        ? 'text-yellow-600'
+                                        : 'text-red-600'
                                   }`}
                                 >
                                   {payment.status ===
                                   'Payment Received By Merchant'
                                     ? 'Complete'
                                     : payment.status === 'Payment Processing'
-                                    ? 'Processing'
-                                    : payment.status}
+                                      ? 'Processing'
+                                      : payment.status}
                                 </td>
                                 <td className="px-6 py-4 text-center">
                                   <Link
@@ -573,7 +573,7 @@ const ParcelTable = () => {
                                 <td className="px-6 py-4">
                                   {order?.delivered_date
                                     ? new Date(
-                                        order.delivered_date
+                                        order.delivered_date,
                                       ).toLocaleString('en-US', {
                                         hour: 'numeric',
                                         minute: 'numeric',
@@ -626,7 +626,7 @@ const ParcelTable = () => {
                                                              'Payment Processing Complete',
                                                              'Payment Completed',
                                                            ].includes(
-                                                             order?.status
+                                                             order?.status,
                                                            )
                                                              ? 'bg-gray-400 cursor-not-allowed'
                                                              : 'bg-blue-600'
@@ -690,7 +690,7 @@ const ParcelTable = () => {
                                 year: 'numeric',
                                 month: '2-digit',
                                 day: '2-digit',
-                              }
+                              },
                             )
                           : '-'}
                       </td>
@@ -738,7 +738,7 @@ const ParcelTable = () => {
                                                              'Payment Processing Complete',
                                                              'Payment Completed',
                                                            ].includes(
-                                                             order?.status
+                                                             order?.status,
                                                            )
                                                              ? 'bg-gray-400 cursor-not-allowed'
                                                              : 'bg-blue-600'

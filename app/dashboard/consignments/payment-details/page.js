@@ -29,7 +29,7 @@ const PaymentDetailsPage = () => {
             headers: {
               Authorization: `Bearer ${token}`,
             },
-          }
+          },
         );
 
         if (!res.ok) {
@@ -56,22 +56,8 @@ const PaymentDetailsPage = () => {
   const merchantPaymentsArray = Array.isArray(payment?.merchantPayments)
     ? payment.merchantPayments
     : payment?.merchantPayments
-    ? Object.values(payment.merchantPayments)
-    : [];
-
-  // Debugging: log both object and array
-  // console.log('Original merchantPayments:', payment?.merchantPayments);
-  // if (Array.isArray(payment?.merchantPayments)) {
-  //   console.log('It is an array');
-  //   payment.merchantPayments.forEach(item => console.log(item));
-  // } else if (payment?.merchantPayments) {
-  //   console.log('It is an object');
-  //   Object.entries(payment.merchantPayments).forEach(([key, value]) =>
-  //     console.log(key, value)
-  //   );
-  // } else {
-  //   console.log('No merchantPayments found');
-  // }
+      ? Object.values(payment.merchantPayments)
+      : [];
 
   return (
     <div className="md:p-6">
@@ -106,7 +92,7 @@ const PaymentDetailsPage = () => {
                       minute: '2-digit',
                       second: '2-digit',
                       hour12: true,
-                    }
+                    },
                   )}
                 </span>
               </p>
@@ -118,8 +104,8 @@ const PaymentDetailsPage = () => {
                     'Payment Received By Merchant'
                       ? 'text-green-600 font-semibold'
                       : payment?.merchantpay?.status === 'Payment Processing'
-                      ? 'text-yellow-600 font-semibold'
-                      : 'text-red-600 font-semibold'
+                        ? 'text-yellow-600 font-semibold'
+                        : 'text-red-600 font-semibold'
                   }
                 >
                   {payment?.merchantpay?.status || '-'}
