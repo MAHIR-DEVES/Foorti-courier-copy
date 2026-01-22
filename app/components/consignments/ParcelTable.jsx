@@ -25,7 +25,7 @@ const statusMapping = {
   Pending: ['Updated as Pending', 'Assigned To Delivery Rider'],
   'Approval Pending': [
     'Assigned Pickup Rider',
-    'Order Placed',
+
     'Pickup Done',
     'Received by Pickup Branch',
     'Transfer Assign for Fulfillment',
