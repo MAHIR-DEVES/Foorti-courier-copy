@@ -6,11 +6,12 @@ import NotificationBell from './topbar/NotificationBell';
 import ProfileMenu from './topbar/Profile';
 import LanguageToggle from './topbar/LanguageToggle';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 const Topbar = ({ toggleSidebar, toggleMobileSearch, showMobileSearch }) => {
   const [query, setQuery] = useState('');
   const [parcel, setParcel] = useState(null);
-console.log(parcel);
+  console.log(parcel);
 
   const [balanceClicked, setBalanceClicked] = useState(false);
   const [error, setError] = useState(null);
@@ -40,7 +41,7 @@ console.log(parcel);
               'Content-Type': 'application/json',
               Authorization: `Bearer ${token}`,
             },
-          }
+          },
         );
 
         if (!res.ok) {
@@ -71,11 +72,11 @@ console.log(parcel);
 
       const res = await fetch(
         `https://admin.merchantfcservice.com/api/order-search?name=${encodeURIComponent(
-          query
+          query,
         )}`,
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
 
       if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
@@ -127,16 +128,20 @@ console.log(parcel);
           <span className="font-semibold text-primary-active">
             {data?.data?.paymentProcessing} Tk
           </span>
-          <span className="text-[15px] bg-[#1976d2] text-white rounded-full px-2.5 py-0.5">
-            Balance
-          </span>
+          {/* /dashboard/payment-details */}
+          <Link href={'#'}>
+            <span className="text-[15px] bg-[#1976d2] text-white rounded-full px-2.5 py-0.5 cursor-pointe">
+              Details
+            </span>
+          </Link>
         </div>
       ) : (
         <>
           <div className="w-8 h-8 flex items-center justify-center rounded-full bg-primary shadow-inner border border-blue-100">
             <FaHandPointer className="text-primary-active text-lg" />
           </div>
-          <span className="font-medium">Check Balance</span>
+
+          <span className="font-medium r">Check Balance</span>
         </>
       )}
     </button>
@@ -188,7 +193,7 @@ console.log(parcel);
                           key={item?.id}
                           onClick={() =>
                             router.push(
-                              `/dashboard/consignments/${item?.tracking_id}`
+                              `/dashboard/consignments/${item?.tracking_id}`,
                             )
                           }
                           className="cursor-pointer py-4 px-4 hover:bg-gray-50 transition-colors duration-200 group"
@@ -274,7 +279,7 @@ console.log(parcel);
                       key={item?.id}
                       onClick={() =>
                         router.push(
-                          `/dashboard/consignments/${item?.tracking_id}`
+                          `/dashboard/consignments/${item?.tracking_id}`,
                         )
                       }
                       className="cursor-pointer py-4 px-4 hover:bg-gray-50 transition-colors duration-200 group"

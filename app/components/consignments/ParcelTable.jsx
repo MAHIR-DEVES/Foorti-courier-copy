@@ -6,6 +6,8 @@ import Link from 'next/link';
 import Loading from '@/app/loading';
 import { Calendar } from 'lucide-react';
 import EditPercaleModal from '../Modal/EditPercaleModal';
+import { FiEdit } from 'react-icons/fi';
+import { MdOutlineRemoveRedEye } from 'react-icons/md';
 
 const tabs = [
   { label: 'All', value: 'All' },
@@ -661,6 +663,11 @@ const ParcelTable = () => {
                   <th className="px-4 py-3">Charge</th>
                   <th className="px-4 py-3">Collection</th>
                   <th className="px-4 py-3">Remarks</th>
+                  {/* ✅ ONLY FOR IN PREVIEW */}
+                  {activeTab === 'Pending' && (
+                    <th className="px-4 py-3">Status</th>
+                  )}
+
                   <th className="px-4 py-3">Details</th>
                 </tr>
               </thead>
@@ -711,12 +718,18 @@ const ParcelTable = () => {
                       <td className="px-4 py-3">
                         {order.remarks ? order.remarks : '-'}
                       </td>
+                      {/* ✅ ONLY IN PREVIEW */}
+                      {activeTab === 'Pending' && (
+                        <td className="px-4 py-3 text-yellow-600 font-semibold">
+                          Rider Unassigned
+                        </td>
+                      )}
                       <td className="px-4 py-3">
                         <Link
                           href={`/dashboard/consignments/${order.tracking_id}`}
                           className="px-3 py-1 bg-blue-600 text-white rounded"
                         >
-                          View Details
+                          view
                         </Link>
                         <button
                           onClick={() => setSelectedOrder(order)}
@@ -745,7 +758,7 @@ const ParcelTable = () => {
                                                          }
                                   `}
                         >
-                          Edit
+                          <FiEdit />
                         </button>
                       </td>
                     </tr>
