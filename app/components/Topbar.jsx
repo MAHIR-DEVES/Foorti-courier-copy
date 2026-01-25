@@ -41,7 +41,7 @@ const Topbar = ({ toggleSidebar, toggleMobileSearch, showMobileSearch }) => {
               'Content-Type': 'application/json',
               Authorization: `Bearer ${token}`,
             },
-          },
+          }
         );
 
         if (!res.ok) {
@@ -72,11 +72,11 @@ const Topbar = ({ toggleSidebar, toggleMobileSearch, showMobileSearch }) => {
 
       const res = await fetch(
         `https://admin.merchantfcservice.com/api/order-search?name=${encodeURIComponent(
-          query,
+          query
         )}`,
         {
           headers: { Authorization: `Bearer ${token}` },
-        },
+        }
       );
 
       if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
@@ -128,8 +128,8 @@ const Topbar = ({ toggleSidebar, toggleMobileSearch, showMobileSearch }) => {
           <span className="font-semibold text-primary-active">
             {data?.data?.paymentProcessing} Tk
           </span>
-          {/* /dashboard/payment-details */}
-          <Link href={'#'}>
+
+          <Link href={'/dashboard/payment-details '}>
             <span className="text-[15px] bg-[#1976d2] text-white rounded-full px-2.5 py-0.5 cursor-pointe">
               Details
             </span>
@@ -193,7 +193,7 @@ const Topbar = ({ toggleSidebar, toggleMobileSearch, showMobileSearch }) => {
                           key={item?.id}
                           onClick={() =>
                             router.push(
-                              `/dashboard/consignments/${item?.tracking_id}`,
+                              `/dashboard/consignments/${item?.tracking_id}`
                             )
                           }
                           className="cursor-pointer py-4 px-4 hover:bg-gray-50 transition-colors duration-200 group"
@@ -279,7 +279,7 @@ const Topbar = ({ toggleSidebar, toggleMobileSearch, showMobileSearch }) => {
                       key={item?.id}
                       onClick={() =>
                         router.push(
-                          `/dashboard/consignments/${item?.tracking_id}`,
+                          `/dashboard/consignments/${item?.tracking_id}`
                         )
                       }
                       className="cursor-pointer py-4 px-4 hover:bg-gray-50 transition-colors duration-200 group"

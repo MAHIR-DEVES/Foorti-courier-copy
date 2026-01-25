@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { FaCheckCircle, FaPhoneAlt } from 'react-icons/fa';
 import NoteModal from '@/app/components/consignments/NoteModal';
+import Loading from '@/app/loading';
 
 const DetailsPage = () => {
   const params = useParams();
@@ -36,7 +37,7 @@ const DetailsPage = () => {
             headers: {
               Authorization: `Bearer ${token}`,
             },
-          },
+          }
         );
 
         if (!res.ok) {
@@ -55,7 +56,7 @@ const DetailsPage = () => {
     fetchConsignment();
   }, [trackingId]);
 
-  if (loading) return <p className="p-4">Loading...</p>;
+  if (loading) return <Loading />;
   if (error) return <p className="p-4 text-red-500">{error}</p>;
 
   console.log(consignment.data.tracking_id);
@@ -98,7 +99,7 @@ const DetailsPage = () => {
                   id: consignment?.data?.tracking_id,
                   note,
                 }),
-              },
+              }
             );
 
             if (!res.ok) {

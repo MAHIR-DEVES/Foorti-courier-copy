@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import Loading from '@/app/loading';
 
 const PaymentDetailsPage = () => {
   const searchParams = useSearchParams();
@@ -29,7 +30,7 @@ const PaymentDetailsPage = () => {
             headers: {
               Authorization: `Bearer ${token}`,
             },
-          },
+          }
         );
 
         if (!res.ok) {
@@ -48,7 +49,7 @@ const PaymentDetailsPage = () => {
     fetchPaymentDetails();
   }, [invoiceId]);
 
-  if (loading) return <p className="p-4">Loading...</p>;
+  if (loading) return <Loading />;
   if (error) return <p className="p-4 text-red-500">Error: {error}</p>;
   if (!payment) return <p className="p-4">No payment details found.</p>;
 
@@ -56,8 +57,8 @@ const PaymentDetailsPage = () => {
   const merchantPaymentsArray = Array.isArray(payment?.merchantPayments)
     ? payment.merchantPayments
     : payment?.merchantPayments
-      ? Object.values(payment.merchantPayments)
-      : [];
+    ? Object.values(payment.merchantPayments)
+    : [];
 
   return (
     <div className="md:p-6">
@@ -92,7 +93,7 @@ const PaymentDetailsPage = () => {
                       minute: '2-digit',
                       second: '2-digit',
                       hour12: true,
-                    },
+                    }
                   )}
                 </span>
               </p>
@@ -104,8 +105,8 @@ const PaymentDetailsPage = () => {
                     'Payment Received By Merchant'
                       ? 'text-green-600 font-semibold'
                       : payment?.merchantpay?.status === 'Payment Processing'
-                        ? 'text-yellow-600 font-semibold'
-                        : 'text-red-600 font-semibold'
+                      ? 'text-yellow-600 font-semibold'
+                      : 'text-red-600 font-semibold'
                   }
                 >
                   {payment?.merchantpay?.status || '-'}
