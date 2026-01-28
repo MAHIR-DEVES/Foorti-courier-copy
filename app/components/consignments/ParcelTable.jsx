@@ -7,7 +7,6 @@ import Loading from '@/app/loading';
 import { Calendar } from 'lucide-react';
 import EditPercaleModal from '../Modal/EditPercaleModal';
 import { FiEdit } from 'react-icons/fi';
-import { MdOutlineRemoveRedEye } from 'react-icons/md';
 
 const tabs = [
   { label: 'All', value: 'All' },

@@ -9,6 +9,7 @@ import {
   ArrowUpRight,
   ArrowDownRight,
 } from 'lucide-react';
+import Link from 'next/link';
 
 const performanceData = [
   {
@@ -18,6 +19,7 @@ const performanceData = [
     color: 'from-blue-500 to-cyan-500',
     bgColor: 'bg-blue-50',
     trendKey: 'delivery_trend',
+    link: '#',
   },
   {
     title: 'COD Processing',
@@ -26,6 +28,7 @@ const performanceData = [
     color: 'from-green-500 to-emerald-500',
     bgColor: 'bg-green-50',
     trendKey: 'cod_trend',
+    link: '#',
   },
   {
     title: 'Return Request',
@@ -34,6 +37,7 @@ const performanceData = [
     color: 'from-amber-500 to-orange-500',
     bgColor: 'bg-amber-50',
     trendKey: 'return_trend',
+    link: '#',
   },
   {
     title: 'Latest Return',
@@ -42,6 +46,7 @@ const performanceData = [
     color: 'from-purple-500 to-pink-500',
     bgColor: 'bg-purple-50',
     trendKey: 'latest_return_trend',
+    link: 'dashboard/latest-return',
   },
 ];
 
@@ -322,8 +327,9 @@ const Card = () => {
                 </div>
 
                 <div className="mt-8 pt-4 border-t border-gray-100">
-                  <button
-                    className={`
+                  <Link href={item.link}>
+                    <button
+                      className={`
                     flex items-center gap-2
                     text-sm font-medium
                     text-gray-600 hover:text-gray-900
@@ -331,10 +337,11 @@ const Card = () => {
                     group-hover:translate-x-1
                     transition-transform
                   `}
-                  >
-                    View details
-                    <ArrowUpRight className="w-4 h-4 group-hover:rotate-45 transition-transform" />
-                  </button>
+                    >
+                      View details
+                      <ArrowUpRight className="w-4 h-4 group-hover:rotate-45 transition-transform" />
+                    </button>
+                  </Link>
                 </div>
               </div>
 
