@@ -17,46 +17,48 @@ const Topbar = ({ toggleSidebar, toggleMobileSearch, showMobileSearch }) => {
   const [error, setError] = useState(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [data, setData] = useState(null);
+  console.log(data);
   const dropdownRef = useRef(null);
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchDashboard = async () => {
-      try {
-        // Get token from localStorage
-        const stored = localStorage.getItem('token');
-        const token = stored ? JSON.parse(stored).token : null;
+  const fetchDashboard = async () => {
+    try {
+      const stored = localStorage.getItem('token');
+      const token = stored ? JSON.parse(stored).token : null;
 
-        if (!token) {
-          setError('No token found');
-          return;
-        }
-
-        // Call API
-        const res = await fetch(
-          'https://admin.merchantfcservice.com/api/merchantdashboard',
-          {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        if (!res.ok) {
-          throw new Error(`Error ${res.status}`);
-        }
-
-        const result = await res.json();
-        setData(result);
-      } catch (err) {
-        console.log(err.message);
+      if (!token) {
+        setError('No token found');
+        return;
       }
-    };
 
-    fetchDashboard();
-  }, []);
+      const res = await fetch(
+        'https://admin.merchantfcservice.com/api/merchantdashboard',
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      if (!res.ok) {
+        throw new Error(`Error ${res.status}`);
+      }
+
+      const result = await res.json();
+      setData(result);
+    } catch (err) {
+      console.log(err.message);
+    }
+  };
+
+  const handleCheckBalance = async () => {
+    if (!balanceClicked && !data) {
+      await fetchDashboard(); // 👈 only when clicked first time
+    }
+    setBalanceClicked(!balanceClicked);
+  };
 
   const handleResultClick = () => {
     if (parcel) {
@@ -72,11 +74,11 @@ const Topbar = ({ toggleSidebar, toggleMobileSearch, showMobileSearch }) => {
 
       const res = await fetch(
         `https://admin.merchantfcservice.com/api/order-search?name=${encodeURIComponent(
-          query
+          query,
         )}`,
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
 
       if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
@@ -120,8 +122,8 @@ const Topbar = ({ toggleSidebar, toggleMobileSearch, showMobileSearch }) => {
 
   const CheckBalanceButton = () => (
     <button
-      className="flex items-center gap-3 px-4 py-1.5 rounded-full border border-[#1976d2] text-primary-active shadow-sm hover:shadow-md transition-all duration-300 bg-[#FAFAFA]"
-      onClick={() => setBalanceClicked(!balanceClicked)}
+      className="flex items-center gap-3 px-4 py-1.5 rounded-full border border-[#1976d2] text-primary-active shadow-sm hover:shadow-md transition-all duration-300 bg-[#FAFAFA] cursor-pointer"
+      onClick={handleCheckBalance}
     >
       {balanceClicked ? (
         <div className="flex justify-between items-center gap-16 md:gap-20 py-0.5">
@@ -141,7 +143,7 @@ const Topbar = ({ toggleSidebar, toggleMobileSearch, showMobileSearch }) => {
             <FaHandPointer className="text-primary-active text-lg" />
           </div>
 
-          <span className="font-medium r">Check Balance</span>
+          <span className="font-medium">Check Balance</span>
         </>
       )}
     </button>
@@ -193,7 +195,7 @@ const Topbar = ({ toggleSidebar, toggleMobileSearch, showMobileSearch }) => {
                           key={item?.id}
                           onClick={() =>
                             router.push(
-                              `/dashboard/consignments/${item?.tracking_id}`
+                              `/dashboard/consignments/${item?.tracking_id}`,
                             )
                           }
                           className="cursor-pointer py-4 px-4 hover:bg-gray-50 transition-colors duration-200 group"
@@ -279,7 +281,7 @@ const Topbar = ({ toggleSidebar, toggleMobileSearch, showMobileSearch }) => {
                       key={item?.id}
                       onClick={() =>
                         router.push(
-                          `/dashboard/consignments/${item?.tracking_id}`
+                          `/dashboard/consignments/${item?.tracking_id}`,
                         )
                       }
                       className="cursor-pointer py-4 px-4 hover:bg-gray-50 transition-colors duration-200 group"
