@@ -720,7 +720,7 @@ const ParcelTable = () => {
                       {/* ✅ ONLY IN PREVIEW */}
                       {activeTab === 'Pending' && (
                         <td className="px-4 py-3 text-yellow-600 font-semibold">
-                          Rider Unassigned
+                          Unassigned
                         </td>
                       )}
                       <td className="px-4 py-3">
