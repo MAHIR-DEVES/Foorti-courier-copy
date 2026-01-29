@@ -17,7 +17,6 @@ const Topbar = ({ toggleSidebar, toggleMobileSearch, showMobileSearch }) => {
   const [error, setError] = useState(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [data, setData] = useState(null);
-  console.log(data);
   const dropdownRef = useRef(null);
   const router = useRouter();
 
