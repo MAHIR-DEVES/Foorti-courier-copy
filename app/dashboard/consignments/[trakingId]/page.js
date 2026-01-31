@@ -5,15 +5,16 @@ import { useParams } from 'next/navigation';
 import { FaCheckCircle, FaPhoneAlt } from 'react-icons/fa';
 import NoteModal from '@/app/components/consignments/NoteModal';
 import Loading from '@/app/loading';
+import SupportModal from '@/app/components/consignments/SupportModal';
 
 const DetailsPage = () => {
   const params = useParams();
   const trackingId = params.trakingId;
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [note, setNote] = useState('');
-  const [submitting, setSubmitting] = useState(false);
+
   const [noteError, setNoteError] = useState(null);
+  const [isSupportOpen, setIsSupportOpen] = useState(false);
 
   console.log(noteError);
 
@@ -37,7 +38,7 @@ const DetailsPage = () => {
             headers: {
               Authorization: `Bearer ${token}`,
             },
-          }
+          },
         );
 
         if (!res.ok) {
@@ -73,9 +74,17 @@ const DetailsPage = () => {
             Note
           </button>
 
-          <button className="bg-blue-500 cursor-pointer text-white px-3 py-1 rounded">
-            Invoice
+          <button
+            onClick={() => setIsSupportOpen(true)}
+            className="bg-blue-500 cursor-pointer text-white px-3 py-1 rounded"
+          >
+            Support
           </button>
+          <SupportModal
+            isOpen={isSupportOpen}
+            onClose={() => setIsSupportOpen(false)}
+            trackingId={consignment?.data?.tracking_id}
+          />
           <button className="bg-indigo-500 cursor-pointer text-white px-3 py-1 rounded">
             Label
           </button>
@@ -99,7 +108,7 @@ const DetailsPage = () => {
                   id: consignment?.data?.tracking_id,
                   note,
                 }),
-              }
+              },
             );
 
             if (!res.ok) {

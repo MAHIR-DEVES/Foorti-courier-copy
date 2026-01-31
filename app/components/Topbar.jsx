@@ -246,7 +246,7 @@ const Topbar = ({ toggleSidebar, toggleMobileSearch, showMobileSearch }) => {
             <div className="cursor-pointer p-3 rounded-full transition-all duration-300 bg-[#F5F5F5]">
               <GoNote className="text-xl text-gray-600 transition-colors duration-200" />
             </div>
-            {/* <NotificationBell /> */}
+            <NotificationBell />
             <ProfileMenu />
           </div>
         </div>
