@@ -2,6 +2,7 @@
 'use client';
 
 import Loading from '@/app/loading';
+import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
 
 export default function PaymentDetails() {
@@ -24,7 +25,7 @@ export default function PaymentDetails() {
               Authorization: `Bearer ${token}`,
               'Content-Type': 'application/json',
             },
-          }
+          },
         );
 
         if (!res.ok) throw new Error('Failed to fetch');
@@ -123,11 +124,13 @@ export default function PaymentDetails() {
         </div>
 
         {/* Bottom centered button */}
-        {/* <div className="mt-10 flex justify-center">
-          <button className="px-12 py-4 bg-[#26A69A] hover:bg-teal-700 text-white font-semibold rounded-xl shadow-md transition text-lg">
-            View Parcel Details
-          </button>
-        </div> */}
+        <div className="mt-10 flex justify-center">
+          <Link href={'/dashboard/view-parcel'}>
+            <button className="px-12 py-4 bg-[#26A69A] hover:bg-teal-700 text-white font-semibold rounded-xl shadow-md transition text-lg">
+              View Parcel Details
+            </button>
+          </Link>
+        </div>
       </div>
     </div>
   );
