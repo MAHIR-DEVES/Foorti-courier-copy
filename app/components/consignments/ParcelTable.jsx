@@ -6,7 +6,6 @@ import Link from 'next/link';
 import Loading from '@/app/loading';
 import { Calendar } from 'lucide-react';
 import EditPercaleModal from '../Modal/EditPercaleModal';
-import { FiEdit } from 'react-icons/fi';
 
 const tabs = [
   { label: 'All', value: 'All' },
@@ -730,7 +729,7 @@ const ParcelTable = () => {
                         >
                           view
                         </Link>
-                        <button
+                        {/* <button
                           onClick={() => setSelectedOrder(order)}
                           disabled={[
                             'Successfully Delivered',
@@ -758,7 +757,7 @@ const ParcelTable = () => {
                                   `}
                         >
                           <FiEdit />
-                        </button>
+                        </button> */}
                       </td>
                     </tr>
                   ))
@@ -802,12 +801,12 @@ const ParcelTable = () => {
             </button>
           </div>
         )}
-      {selectedOrder && (
+      {/* {selectedOrder && (
         <EditPercaleModal
           order={selectedOrder}
           onClose={() => setSelectedOrder(null)}
         />
-      )}
+      )} */}
     </div>
   );
 };

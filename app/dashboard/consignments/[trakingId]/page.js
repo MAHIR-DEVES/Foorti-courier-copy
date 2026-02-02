@@ -6,10 +6,13 @@ import { FaCheckCircle, FaPhoneAlt } from 'react-icons/fa';
 import NoteModal from '@/app/components/consignments/NoteModal';
 import Loading from '@/app/loading';
 import SupportModal from '@/app/components/consignments/SupportModal';
+import { FiEdit } from 'react-icons/fi';
+import EditPercaleModal from '@/app/components/Modal/EditPercaleModal';
 
 const DetailsPage = () => {
   const params = useParams();
   const trackingId = params.trakingId;
+  const [isEditOpen, setIsEditOpen] = useState(false);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -24,6 +27,19 @@ const DetailsPage = () => {
 
   const parcelDetails = consignment?.order_status[0];
   // const parcelDate = parcelDetails?.date;
+
+  const DISABLED_EDIT_STATUSES = [
+    'Successfully Delivered',
+    'Delivered Amount Collected from Branch',
+    'Delivered Amount Send to Fulfillment',
+    'Payment Processing',
+    'Payment Processing Complete',
+    'Payment Completed',
+  ];
+
+  const isEditDisabled = DISABLED_EDIT_STATUSES.includes(
+    consignment?.data?.status,
+  );
 
   useEffect(() => {
     if (!trackingId) return;
@@ -73,7 +89,24 @@ const DetailsPage = () => {
           >
             Note
           </button>
+          <button
+            onClick={() => setIsEditOpen(true)}
+            disabled={isEditDisabled}
+            className={`px-3 py-1 rounded text-white ${
+              isEditDisabled
+                ? 'bg-gray-400 cursor-not-allowed'
+                : 'bg-green-600 hover:bg-green-700'
+            }`}
+          >
+            Edit Parcel
+          </button>
 
+          {isEditOpen && !isEditDisabled && (
+            <EditPercaleModal
+              order={consignment?.data}
+              onClose={() => setIsEditOpen(false)}
+            />
+          )}
           <button
             onClick={() => setIsSupportOpen(true)}
             className="bg-blue-500 cursor-pointer text-white px-3 py-1 rounded"

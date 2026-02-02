@@ -8,11 +8,11 @@ const EditPercaleModal = ({ order, onClose }) => {
 
   const [customerName, setCustomerName] = useState(order.customer_name || '');
   const [customerPhone, setCustomerPhone] = useState(
-    order.customer_phone || ''
+    order.customer_phone || '',
   );
   const [collection, setCollection] = useState(order.collection || '');
   const [customerAddress, setCustomerAddress] = useState(
-    order.customer_address || ''
+    order.customer_address || '',
   );
   const [remarks, setRemarks] = useState(order.remarks || '');
   const [loading, setLoading] = useState(false);
@@ -46,7 +46,7 @@ const EditPercaleModal = ({ order, onClose }) => {
             Authorization: `Bearer ${token}`, // Token send
           },
           body: JSON.stringify(updatedOrder),
-        }
+        },
       );
 
       const data = await res.json();
@@ -107,7 +107,7 @@ const EditPercaleModal = ({ order, onClose }) => {
           </div>
 
           {/* COD Amount */}
-          {/* <div>
+          <div>
             <label className="block font-semibold mb-1">COD Amount</label>
             <input
               type="number"
@@ -115,7 +115,7 @@ const EditPercaleModal = ({ order, onClose }) => {
               onChange={e => setCollection(e.target.value)}
               className="w-full border border-gray-200 rounded px-3 py-2"
             />
-          </div> */}
+          </div>
 
           {/* Customer Address */}
           <div>
