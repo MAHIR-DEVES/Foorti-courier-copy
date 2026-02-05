@@ -1,39 +1,6 @@
 'use client';
-const consignments = [
-  {
-    id: 'C-1001',
-    date: '2026-02-01',
-    invoice: 'INV-4561',
-    customer: 'Rahim Traders',
-    cod: 12500,
-    charge: 450,
-    lot: 'L-21',
-    status: 'Pending',
-    notes: 'Urgent delivery',
-  },
-  {
-    id: 'C-1002',
-    date: '2026-02-01',
-    invoice: 'INV-4562',
-    customer: 'Karim Enterprise',
-    cod: 9800,
-    charge: 350,
-    lot: 'L-22',
-    status: 'Ready',
-    notes: '-',
-  },
-  {
-    id: 'C-1003',
-    date: '2026-02-02',
-    invoice: 'INV-4563',
-    customer: 'Sadia Store',
-    cod: 15200,
-    charge: 500,
-    lot: 'L-23',
-    status: 'Hold',
-    notes: 'Payment issue',
-  },
-];
+import Loading from '@/app/loading';
+import { useState, useEffect } from 'react';
 
 const StatusBadge = ({ status }) => {
   const base =
@@ -49,6 +16,53 @@ const StatusBadge = ({ status }) => {
 };
 
 export default function ViewParcelTable() {
+  const [consignments, setConsignments] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchConsignments = async () => {
+      try {
+        const stored = localStorage.getItem('token');
+        const token = stored ? JSON.parse(stored).token : null;
+
+        if (!token) {
+          console.error('No token found');
+          setLoading(false);
+          return;
+        }
+
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_MERCHANT_API_KEY}/merchantdashboard`,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('API Response:', data);
+        setConsignments(data.data?.parcel_details_list || []);
+      } catch (error) {
+        console.error('Error fetching consignments:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchConsignments();
+  }, []);
+
+  if (loading) {
+     return <Loading />;
+  }
+
   return (
     <div className="bg-white rounded-md shadow-sm overflow-hidden">
       {/* Header */}
@@ -75,10 +89,7 @@ export default function ViewParcelTable() {
                 Creation Date
               </th>
               <th className="text-left p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                ID
-              </th>
-              <th className="text-left p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                Invoice
+                Tracking Id
               </th>
               <th className="text-left p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                 Customer Name
@@ -88,9 +99,6 @@ export default function ViewParcelTable() {
               </th>
               <th className="text-left p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                 Charge
-              </th>
-              <th className="text-left p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                Lot
               </th>
               <th className="text-left p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                 Status
@@ -104,52 +112,40 @@ export default function ViewParcelTable() {
           <tbody className="divide-y divide-gray-100">
             {consignments.map(item => (
               <tr
-                key={item.id}
+                key={item.tracking_id}
                 className="hover:bg-gray-50/80 transition-colors"
               >
                 <td className="p-4">
                   <div className="text-sm font-medium text-gray-900">
-                    {item.date}
+                    {item.created_at ? new Date(item.created_at).toLocaleDateString() : '-'}
                   </div>
                 </td>
                 <td className="p-4">
                   <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
-                    {item.id}
+                    {item.tracking_id || '-'}
                   </span>
                 </td>
                 <td className="p-4">
-                  <div className="text-sm font-medium text-gray-900 font-mono">
-                    {item.invoice}
-                  </div>
-                </td>
-                <td className="p-4">
                   <div className="text-sm font-medium text-gray-900">
-                    {item.customer}
+                    {item.customer_name || '-'}
                   </div>
                 </td>
                 <td className="p-4">
                   <div className="text-sm font-bold text-gray-900">
-                    ৳{item.cod.toLocaleString()}
+                    ৳{item.Cod_amount?.toLocaleString() || '-'}
                   </div>
                 </td>
                 <td className="p-4">
                   <div className="text-sm font-medium text-emerald-600">
-                    ৳{item.charge}
+                    ৳{item.delivery_charge || '-'}
                   </div>
                 </td>
                 <td className="p-4">
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-50 text-purple-700">
-                    {item.lot}
-                  </span>
+                  <StatusBadge status={item.status || '-'} />
                 </td>
                 <td className="p-4">
-                  <StatusBadge status={item.status} />
-                </td>
-                <td className="p-4">
-                  <div
-                    className={`text-sm ${item.notes === '-' ? 'text-gray-400' : 'text-gray-600'}`}
-                  >
-                    {item.notes}
+                  <div className="text-sm text-gray-600">
+                    -
                   </div>
                 </td>
               </tr>
