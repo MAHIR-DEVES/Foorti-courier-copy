@@ -200,19 +200,21 @@ const Card = () => {
                 </div>
 
                 <div className="mt-8 pt-4 border-t border-gray-100">
-                  <button
-                    className={`
-                    flex items-center gap-2
-                    text-sm font-medium
-                    text-gray-600 hover:text-gray-900
-                    transition-colors duration-200
-                    group-hover:translate-x-1
-                    transition-transform
-                  `}
-                  >
-                    View details
-                    <ArrowUpRight className="w-4 h-4 group-hover:rotate-45 transition-transform" />
-                  </button>
+                  <Link href={`/dashboard/dashboard-processing/${item.key.split('_')[0] === 'latest' ? 'latest' : item.key.split('_')[0]}`}>
+                    <button
+                      className={`
+                      flex items-center gap-2
+                      text-sm font-medium
+                      text-gray-600 hover:text-gray-900
+                      transition-colors duration-200
+                      group-hover:translate-x-1
+                      transition-transform
+                    `}
+                    >
+                      View details
+                      <ArrowUpRight className="w-4 h-4 group-hover:rotate-45 transition-transform" />
+                    </button>
+                  </Link>
                 </div>
               </div>
 
@@ -327,7 +329,7 @@ const Card = () => {
                 </div>
 
                 <div className="mt-8 pt-4 border-t border-gray-100">
-                  <Link href={item.link}>
+                  <Link href={`/dashboard/dashboard-processing/${item.key.split('_')[0] === 'latest' ? 'latest' : item.key.split('_')[0]}`}>
                     <button
                       className={`
                     flex items-center gap-2

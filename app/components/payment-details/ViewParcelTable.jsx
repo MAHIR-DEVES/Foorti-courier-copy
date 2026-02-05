@@ -69,15 +69,15 @@ export default function ViewParcelTable() {
       <div className="flex items-center justify-between p-6 border-b border-gray-300 bg-gray-50/50">
         <div>
           <h2 className="text-xl font-bold text-gray-900">
-            Clearable Consignments
+            Consignments Lists
           </h2>
           <p className="text-sm text-gray-500 mt-1">
             Total {consignments.length} consignments
           </p>
         </div>
-        <button className="bg-emerald-500 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-emerald-600 transition-colors shadow-sm">
+        {/* <button className="bg-emerald-500 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-emerald-600 transition-colors shadow-sm">
           Print Report
-        </button>
+        </button> */}
       </div>
 
       {/* Table */}
