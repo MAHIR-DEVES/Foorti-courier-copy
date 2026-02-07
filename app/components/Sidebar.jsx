@@ -75,15 +75,20 @@ const Sidebar = ({ isOpen, onClose }) => {
   }, []);
 
   const handleLogout = () => {
+    // Store previous token for detection
+    const previousToken = localStorage.getItem('token');
+    localStorage.setItem('previousToken', previousToken || '');
+    
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    
     toast.success('Logout successful!', {
       position: 'top-right',
-      autoClose: 2000,
+      autoClose: 1000,
     });
 
-    setTimeout(() => {
-      router.push('/landing/login');
-    }, 2000);
+    // Navigate immediately
+    router.push('/landing/login');
   };
 
   return (

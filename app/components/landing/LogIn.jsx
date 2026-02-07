@@ -309,6 +309,10 @@ const Login = () => {
       const data = await res.json();
 
       if (res.ok) {
+        // Store previous token to help with detection
+        const previousToken = localStorage.getItem('token');
+        localStorage.setItem('previousToken', previousToken || '');
+        
         if (typeof data.token === 'object') {
           localStorage.setItem('token', JSON.stringify(data.token));
         } else {
@@ -321,9 +325,8 @@ const Login = () => {
           position: 'top-right',
         });
 
-        setTimeout(() => {
-          router.push('/dashboard');
-        }, 2000);
+        // Navigate immediately without delay
+        router.push('/dashboard');
       } else {
         toast.error('Invalid email or password.', {
           position: 'top-right',

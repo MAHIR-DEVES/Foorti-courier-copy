@@ -98,7 +98,20 @@ const ParcelTable = () => {
         if (!response.ok) throw new Error('Failed to fetch orders');
 
         const data = await response.json();
-        setOrders(data.confirmed_order_list || []);
+        console.log('Full API Response:', data);
+        
+        // Safely access the confirmed_order_list
+        const list = data?.data?.confirmed_order_list || data?.confirmed_order_list || [];
+        console.log('FULL LIST:', list);
+        
+        // Apply filtering only for Pending tab
+        let filteredOrders = list;
+        if (activeTab === 'Pending') {
+          filteredOrders = list.filter(item => String(item?.parcel_update_track_confirm) === "1");
+          console.log('Pending Orders:', filteredOrders);
+        }
+        
+        setOrders(filteredOrders);
       } catch (err) {
         console.error('API Error:', err.message);
       } finally {
@@ -106,7 +119,7 @@ const ParcelTable = () => {
       }
     };
     fetchOrders();
-  }, []);
+  }, [activeTab]);
 
   // fetch payments
   useEffect(() => {
@@ -171,10 +184,24 @@ const ParcelTable = () => {
   }, [queryStatus]);
 
   const filteredOrders = orders.filter(order => {
+    if (activeTab === 'Pending') return true;
+    
     if (activeTab === 'All' || activeTab === 'List by Date') return true;
+    
+    // Special handling for Approval Pending tab
+    if (activeTab === 'Approval Pending') {
+      return order.status === 'Successfully Delivered' || 
+             order.status === 'Delivered Amount Collected from Branch';
+    }
+    
     const allowedStatuses = statusMapping[activeTab] || [];
     return allowedStatuses.includes(order.status);
   });
+  
+  // Log Approval Pending orders for debugging
+  if (activeTab === 'Approval Pending') {
+    console.log('Approval Pending Orders:', filteredOrders);
+  }
 
   const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -665,6 +692,11 @@ const ParcelTable = () => {
                   {activeTab === 'Pending' && (
                     <th className="px-4 py-3">Status</th>
                   )}
+                  
+                  {/* ✅ ONLY FOR APPROVAL PENDING */}
+                  {activeTab === 'Approval Pending' && (
+                    <th className="px-4 py-3">Status</th>
+                  )}
 
                   <th className="px-4 py-3">Details</th>
                 </tr>
@@ -720,6 +752,15 @@ const ParcelTable = () => {
                       {activeTab === 'Pending' && (
                         <td className="px-4 py-3 text-yellow-600 font-semibold">
                           Unassigned
+                        </td>
+                      )}
+                      
+                      {/* ✅ ONLY FOR APPROVAL PENDING */}
+                      {activeTab === 'Approval Pending' && (
+                        <td className="px-4 py-3">
+                          {order.status === 'Delivered Amount Collected from Branch' 
+                            ? 'Successfully Delivered' 
+                            : order.status}
                         </td>
                       )}
                       <td className="px-4 py-3">
