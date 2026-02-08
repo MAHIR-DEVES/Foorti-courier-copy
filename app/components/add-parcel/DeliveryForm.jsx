@@ -22,6 +22,8 @@ const DeliveryForm = ({ active }) => {
 
   const [districts, setDistricts] = useState([]);
   const [areas, setAreas] = useState([]);
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // fetch Districts
   useEffect(() => {
@@ -69,6 +71,61 @@ const DeliveryForm = ({ active }) => {
     }));
   };
 
+  // Form validation - check if all required fields are filled and valid
+  const validateForm = () => {
+    const newErrors = {};
+    
+    // Required field validations
+    if (!formData.phone.trim()) {
+      newErrors.phone = 'Phone number is required';
+    } else if (!/^\d{11}$/.test(formData.phone)) {
+      newErrors.phone = 'Phone number must be exactly 11 digits';
+    }
+    
+    if (!formData.name.trim()) {
+      newErrors.name = 'Name is required';
+    }
+    
+    if (!formData.address.trim()) {
+      newErrors.address = 'Address is required';
+    }
+    
+    if (!formData.districtId) {
+      newErrors.district = 'District is required';
+    }
+    
+    if (!formData.area) {
+      newErrors.area = 'Area is required';
+    }
+    
+    if (!formData.weight.trim()) {
+      newErrors.weight = 'Weight is required';
+    } else if (isNaN(formData.weight) || parseFloat(formData.weight) <= 0) {
+      newErrors.weight = 'Weight must be a positive number';
+    }
+    
+    if (!formData.cod_amount.trim()) {
+      newErrors.cod_amount = 'COD Amount is required';
+    } else if (isNaN(formData.cod_amount) || parseFloat(formData.cod_amount) < 0) {
+      newErrors.cod_amount = 'COD Amount must be a valid number';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const isFormValid = () => {
+    return (
+      formData.phone.trim() !== '' &&
+      formData.name.trim() !== '' &&
+      formData.address.trim() !== '' &&
+      formData.districtId !== '' &&
+      formData.area !== '' &&
+      formData.weight.trim() !== '' &&
+      formData.cod_amount.trim() !== ''
+    );
+  };
+
   // handle district change separately
   const handleDistrictChange = e => {
     const selectedIndex = e.target.selectedIndex;
@@ -86,12 +143,18 @@ const DeliveryForm = ({ active }) => {
 
   const handleSubmit = async e => {
     e.preventDefault();
-    // ✅ Phone number validation (must be exactly 11 digits)
-    if (!/^\d{11}$/.test(formData.phone)) {
-      toast.error('Please enter a valid phone number with 11 digit');
+    
+    // Prevent double submit
+    if (isSubmitting) return;
+    
+    // Validate form
+    if (!validateForm()) {
+      toast.error('Please fix the validation errors');
       return;
     }
-
+    
+    setIsSubmitting(true);
+    
     try {
       const finalData = {
         customer_name: formData.name || '',
@@ -110,10 +173,7 @@ const DeliveryForm = ({ active }) => {
         is_exchange: 1,
         isPartial: 1,
       };
-      console.log(finalData);
-      // is_exchange: formData.exchange ? 1 : 0,
-      // isPartial: formData.partial ? 1 : 0,
-
+      
       const stored = localStorage.getItem('token');
       const token = stored ? JSON.parse(stored).token : null;
 
@@ -129,31 +189,36 @@ const DeliveryForm = ({ active }) => {
         }
       );
 
-      console.log(finalData);
-
       if (!res.ok) {
-        toast.error(`Request failed: ${res.status}`);
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || `Request failed: ${res.status}`);
       }
-      if (res.status === 200) {
-        toast.success('parcel loaded successfully');
-        router.push('/dashboard/consignments');
-        setFormData({
-          phone: '',
-          cod_amount: '',
-          name: '',
-          invoice: '',
-          address: '',
-          note: '',
-          district: '',
-          districtId: '',
-          area: '',
-          weight: '',
-          exchange: false,
-          partial: false,
-        });
-      }
+      
+      const result = await res.json();
+      toast.success('Parcel created successfully');
+      router.push('/dashboard/consignments');
+      
+      // Reset form
+      setFormData({
+        phone: '',
+        cod_amount: '',
+        name: '',
+        invoice: '',
+        address: '',
+        note: '',
+        district: '',
+        districtId: '',
+        area: '',
+        weight: '',
+        exchange: false,
+        partial: false,
+      });
+      setErrors({});
     } catch (error) {
-      toast.error('Error submitting form:', error);
+      console.error('Error submitting form:', error);
+      toast.error(error.message || 'Error submitting form. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -166,13 +231,20 @@ const DeliveryForm = ({ active }) => {
             Phone#
           </label>
           <input
-            type="number"
+            type="tel"
             name="phone"
             value={formData.phone}
             onChange={handleChange}
             placeholder="Please enter a valid phone number with 11 digit"
-            className="w-full p-3 border border-gray-300 rounded-md focus:outline-none"
+            className={`w-full p-3 border rounded-md focus:outline-none ${
+              errors.phone 
+                ? 'border-red-500 focus:ring-2 focus:ring-red-200' 
+                : 'border-gray-300 focus:ring-2 focus:ring-blue-200'
+            }`}
           />
+          {errors.phone && (
+            <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
+          )}
         </div>
         <div>
           <label className="block text-md font-medium text-secondary mb-1">
@@ -184,8 +256,15 @@ const DeliveryForm = ({ active }) => {
             value={formData.cod_amount ?? ''}
             onChange={handleChange}
             placeholder="COD Amount"
-            className="w-full p-3 border border-gray-300 rounded-md focus:outline-none"
+            className={`w-full p-3 border rounded-md focus:outline-none ${
+              errors.cod_amount 
+                ? 'border-red-500 focus:ring-2 focus:ring-red-200' 
+                : 'border-gray-300 focus:ring-2 focus:ring-blue-200'
+            }`}
           />
+          {errors.cod_amount && (
+            <p className="mt-1 text-sm text-red-600">{errors.cod_amount}</p>
+          )}
         </div>
       </div>
 
@@ -201,8 +280,15 @@ const DeliveryForm = ({ active }) => {
             value={formData.name}
             onChange={handleChange}
             placeholder="Type Name"
-            className="w-full p-3 border border-gray-300 rounded-md focus:outline-none"
+            className={`w-full p-3 border rounded-md focus:outline-none ${
+              errors.name 
+                ? 'border-red-500 focus:ring-2 focus:ring-red-200' 
+                : 'border-gray-300 focus:ring-2 focus:ring-blue-200'
+            }`}
           />
+          {errors.name && (
+            <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+          )}
         </div>
         <div>
           <label className="block text-md font-medium text-secondary mb-1">
@@ -230,8 +316,15 @@ const DeliveryForm = ({ active }) => {
             value={formData.address}
             onChange={handleChange}
             placeholder="Type Address"
-            className="w-full p-3 border border-gray-300 rounded-md focus:outline-none"
+            className={`w-full p-3 border rounded-md focus:outline-none ${
+              errors.address 
+                ? 'border-red-500 focus:ring-2 focus:ring-red-200' 
+                : 'border-gray-300 focus:ring-2 focus:ring-blue-200'
+            }`}
           ></textarea>
+          {errors.address && (
+            <p className="mt-1 text-sm text-red-600">{errors.address}</p>
+          )}
         </div>
         <div>
           <label className="block text-md font-medium text-secondary mb-1">
@@ -257,7 +350,11 @@ const DeliveryForm = ({ active }) => {
             name="district"
             value={formData.districtId}
             onChange={handleDistrictChange}
-            className="w-full p-3 border border-gray-300 rounded-md focus:outline-none"
+            className={`w-full p-3 border rounded-md focus:outline-none ${
+              errors.district 
+                ? 'border-red-500 focus:ring-2 focus:ring-red-200' 
+                : 'border-gray-300 focus:ring-2 focus:ring-blue-200'
+            }`}
           >
             <option value="">Select District</option>
             {districts.map(dist => (
@@ -266,6 +363,9 @@ const DeliveryForm = ({ active }) => {
               </option>
             ))}
           </select>
+          {errors.district && (
+            <p className="mt-1 text-sm text-red-600">{errors.district}</p>
+          )}
         </div>
 
         <div>
@@ -276,7 +376,11 @@ const DeliveryForm = ({ active }) => {
             name="area"
             value={formData.area}
             onChange={handleChange}
-            className="w-full p-3 border border-gray-300 rounded-md focus:outline-none"
+            className={`w-full p-3 border rounded-md focus:outline-none ${
+              errors.area 
+                ? 'border-red-500 focus:ring-2 focus:ring-red-200' 
+                : 'border-gray-300 focus:ring-2 focus:ring-blue-200'
+            }`}
           >
             <option value="">Select Area</option>
             {areas.map(area => (
@@ -285,6 +389,9 @@ const DeliveryForm = ({ active }) => {
               </option>
             ))}
           </select>
+          {errors.area && (
+            <p className="mt-1 text-sm text-red-600">{errors.area}</p>
+          )}
         </div>
       </div>
 
@@ -300,8 +407,15 @@ const DeliveryForm = ({ active }) => {
             value={formData.weight}
             onChange={handleChange}
             placeholder="Please enter your Weight"
-            className="w-full p-3 border border-gray-300 rounded-md focus:outline-none"
+            className={`w-full p-3 border rounded-md focus:outline-none ${
+              errors.weight 
+                ? 'border-red-500 focus:ring-2 focus:ring-red-200' 
+                : 'border-gray-300 focus:ring-2 focus:ring-blue-200'
+            }`}
           />
+          {errors.weight && (
+            <p className="mt-1 text-sm text-red-600">{errors.weight}</p>
+          )}
         </div>
       </div>
       <div className="flex flex-col justify-between">
@@ -328,9 +442,14 @@ const DeliveryForm = ({ active }) => {
         </div>
         <button
           type="submit"
-          className="w-3xl mx-auto button-primary cursor-pointer text-white p-2.5 px-4 rounded-md hover:button-primary text-3xl"
+          disabled={!isFormValid() || isSubmitting}
+          className={`w-3xl mx-auto button-primary cursor-pointer text-white p-2.5 px-4 rounded-md text-3xl ${
+            (!isFormValid() || isSubmitting)
+              ? 'opacity-50 cursor-not-allowed' 
+              : 'hover:button-primary'
+          }`}
         >
-          Submit
+          {isSubmitting ? 'Submitting...' : 'Submit'}
         </button>
       </div>
     </form>
