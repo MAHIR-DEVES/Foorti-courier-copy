@@ -27,7 +27,7 @@ const performanceData = [
     icon: <DollarSign className="w-5 h-5" />,
     color: 'bg-blue-100',
     textColor: 'text-blue-700',
-    link: '#',
+    link: '/dashboard/consignments?status=Approval%20Pending',
   },
   {
     title: 'Return Request',
@@ -35,7 +35,7 @@ const performanceData = [
     icon: <RefreshCw className="w-5 h-5" />,
     color: 'bg-blue-100',
     textColor: 'text-blue-700',
-    link: '#',
+    link: '/dashboard/dashboard-processing/return',
   },
   {
     title: 'Latest Return',
@@ -91,7 +91,7 @@ const Card = () => {
   const [dashboardData, setDashboardData] = useState({});
   const [loading, setLoading] = useState(true);
   
-  const { pendingCount } = useOrderContext();
+  const { pendingCount, codPendingCount } = useOrderContext();
   
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -133,6 +133,11 @@ const Card = () => {
           // For the Delivery Processing card, use the pending count from context
           if(item.key === 'delivery_processing') {
             value = pendingCount;
+          }
+          
+          // For the COD Processing card, use the COD pending count from context
+          if(item.key === 'cod_processing') {
+            value = codPendingCount;
           }
 
           return (

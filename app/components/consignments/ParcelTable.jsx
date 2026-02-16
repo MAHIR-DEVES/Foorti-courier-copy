@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import Link from 'next/link'; 
+import Link from 'next/link';
 
 import Loading from '@/app/loading';
 import { useOrderContext } from '@/app/contexts/OrderContext';
@@ -70,8 +70,8 @@ const ParcelTable = () => {
   const [activeTab, setActiveTab] = useState(queryStatus);
   const [orders, setOrders] = useState([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
-  
-  const { updatePendingCount } = useOrderContext();
+
+  const { updatePendingCount, updateCodPendingCount } = useOrderContext();
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
@@ -104,8 +104,9 @@ const ParcelTable = () => {
           [];
 
         setOrders(list);
-        // Update the pending count in context
+        // Update both pending counts in context
         updatePendingCount(list);
+        updateCodPendingCount(list);
       } catch (err) {
         console.error(err);
       } finally {
@@ -119,34 +120,34 @@ const ParcelTable = () => {
   /* ================= FILTER LOGIC (FIXED) ================= */
 
   const filteredOrders = useMemo(() => {
-  if (activeTab === TAB.ALL || activeTab === TAB.LIST_DATE) {
-    return orders;
-  }
+    if (activeTab === TAB.ALL || activeTab === TAB.LIST_DATE) {
+      return orders;
+    }
 
-  // Pending orders:
-  // parcel_update_track_confirm === '1'
-  if (activeTab === TAB.PENDING) {
-    return orders.filter(o =>
-      String(o?.parcel_update_track_confirm) === '1' &&
-      !statusMapping[TAB.APPROVAL].includes(o.status)
-    );
-  }
+    // Pending orders:
+    // parcel_update_track_confirm === '1'
+    if (activeTab === TAB.PENDING) {
+      return orders.filter(o =>
+        String(o?.parcel_update_track_confirm) === '1' &&
+        !statusMapping[TAB.APPROVAL].includes(o.status)
+      );
+    }
 
-  // PREVIEW
-  if (activeTab === TAB.PREVIEW) {
-    return orders.filter(
-      o =>
-        String(o?.parcel_update_track_confirm) !== '1' &&
-        statusMapping[TAB.PREVIEW].includes(o.status)
-    );
-  }
+    // PREVIEW
+    if (activeTab === TAB.PREVIEW) {
+      return orders.filter(
+        o =>
+          String(o?.parcel_update_track_confirm) !== '1' &&
+          statusMapping[TAB.PREVIEW].includes(o.status)
+      );
+    }
 
-  // Approval / Partial / Cancelled
-  const allowed = statusMapping[activeTab];
-  if (!allowed) return [];
+    // Approval / Partial / Cancelled
+    const allowed = statusMapping[activeTab];
+    if (!allowed) return [];
 
-  return orders.filter(o => allowed.includes(o.status));
-}, [orders, activeTab]);
+    return orders.filter(o => allowed.includes(o.status));
+  }, [orders, activeTab]);
 
 
   /* ================= PAGINATION ================= */
@@ -263,7 +264,7 @@ const ParcelTable = () => {
                   <td className="px-4 py-3 font-semibold">
                     {order.status ===
                       'Assigned To Delivery Rider'
-                      ? 'Assigned (Pending)'
+                      ? 'Assigned'
                       : 'Unassigned'}
                   </td>
                 )}
@@ -286,6 +287,46 @@ const ParcelTable = () => {
           )}
         </tbody>
       </table>
+      {/* PAGINATION */}
+      {filteredOrders.length > itemsPerPage && (
+        <div className="flex justify-between items-center mt-6">
+
+          <button
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage(p => p - 1)}
+            className={`px-4 py-2 border rounded
+        ${currentPage === 1
+                ? 'bg-gray-200 cursor-not-allowed'
+                : 'bg-white hover:bg-gray-100'
+              }`}
+          >
+            Previous
+          </button>
+
+          <span className="text-sm">
+            Page {currentPage} of{' '}
+            {Math.ceil(filteredOrders.length / itemsPerPage)}
+          </span>
+
+          <button
+            disabled={
+              currentPage ===
+              Math.ceil(filteredOrders.length / itemsPerPage)
+            }
+            onClick={() => setCurrentPage(p => p + 1)}
+            className={`px-4 py-2 border rounded
+        ${currentPage ===
+                Math.ceil(filteredOrders.length / itemsPerPage)
+                ? 'bg-gray-200 cursor-not-allowed'
+                : 'bg-white hover:bg-gray-100'
+              }`}
+          >
+            Next
+          </button>
+
+        </div>
+      )}
+
     </div>
   );
 };
