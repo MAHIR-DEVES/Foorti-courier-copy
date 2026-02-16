@@ -22,6 +22,8 @@ const DashboardProcessingTable = () => {
       case 'return':
       case 'latest':
         return 'latest_return_list';
+      case 'pending':
+        return 'delivery_processing_list'; // Pending orders are part of delivery processing
       default:
         return null;
     }
@@ -36,6 +38,8 @@ const DashboardProcessingTable = () => {
       case 'return':
       case 'latest':
         return 'Latest Return';
+      case 'pending':
+        return 'Pending Orders';
       default:
         return 'Processing List';
     }
@@ -73,7 +77,16 @@ const DashboardProcessingTable = () => {
         if (result?.success && result?.data) {
           const listKey = getTypeMapping();
           if (listKey && result.data[listKey]) {
-            setData(result.data[listKey]);
+            let listData = result.data[listKey];
+            
+            // If type is 'pending', filter to show only pending orders
+            if (type === 'pending') {
+              listData = listData.filter(item => 
+                String(item?.parcel_update_track_confirm) === '1'
+              );
+            }
+            
+            setData(listData);
           } else {
             setData([]);
           }

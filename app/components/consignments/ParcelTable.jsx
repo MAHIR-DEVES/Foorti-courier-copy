@@ -1,853 +1,291 @@
 'use client';
-import { useEffect, useState } from 'react';
+
+import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
-import Link from 'next/link';
+import Link from 'next/link'; 
+
 import Loading from '@/app/loading';
-import { Calendar } from 'lucide-react';
-import EditPercaleModal from '../Modal/EditPercaleModal';
+import { useOrderContext } from '@/app/contexts/OrderContext';
+
+/* ================= TAB CONSTANTS ================= */
+
+const TAB = {
+  ALL: 'All',
+  LIST_DATE: 'List by Date',
+  PREVIEW: 'In Preview',
+  PENDING: 'Pending',
+  APPROVAL: 'Approval Pending',
+  PARTIAL: 'Partially Delivered',
+  CANCELLED: 'Cancelled',
+  DELIVERED: 'Delivered',
+  PAYMENT: 'Payment',
+};
 
 const tabs = [
-  { label: 'All', value: 'All' },
-  { label: 'List by Date', value: 'List by Date' },
-  { label: 'In Preview', value: 'In Preview' },
-
-  { label: 'Pending', value: 'Pending' },
-  { label: 'Approval Pending', value: 'Approval Pending' },
-  { label: 'Partially Delivered', value: 'Partially Delivered' },
-  { label: 'Cancelled', value: 'Cancelled' },
-  { label: 'Delivered ', value: 'Delivered ' },
-  { label: 'Payment', value: 'Payment' },
+  { label: 'All', value: TAB.ALL },
+  { label: 'List by Date', value: TAB.LIST_DATE },
+  { label: 'In Preview', value: TAB.PREVIEW },
+  { label: 'Pending', value: TAB.PENDING },
+  { label: 'Approval Pending', value: TAB.APPROVAL },
+  { label: 'Partially Delivered', value: TAB.PARTIAL },
+  { label: 'Cancelled', value: TAB.CANCELLED },
+  { label: 'Delivered', value: TAB.DELIVERED },
+  { label: 'Payment', value: TAB.PAYMENT },
 ];
 
+/* ================= STATUS MAPPING ================= */
+
 const statusMapping = {
-  'In Preview': ['Assigned Pickup Rider', 'Order Placed', 'Pickup Done'],
-  Pending: ['Updated as Pending', 'Assigned To Delivery Rider'],
-  'Approval Pending': [
-    'Assigned Pickup Rider',
-
-    'Pickup Done',
-    'Received by Pickup Branch',
-    'Transfer Assign for Fulfillment',
-    'Transfer Reach To Fullfilment',
-    'Received By Fullfilment',
-    'Transfer Assign for Branch',
-    'Transfer Reach To Branch',
-    'Received By Destination Hub',
+  [TAB.PREVIEW]: ['Assigned Pickup Rider', 'Order Placed', 'Pickup Done'],
+  [TAB.APPROVAL]: [
+    'Successfully Delivered',
+    'Delivered Amount Collected from Branch',
   ],
-
-  'Partially Delivered': ['Partially Delivered'],
-  Cancelled: [
-    'Return Confirm',
+  [TAB.PARTIAL]: ['Partially Delivered'],
+  [TAB.CANCELLED]: [
     'Cancel Order',
-    'Return Reach To Merchant',
-    'Assigned Rider For Return',
-    'Return Received By Destination Hub',
+    'Return Confirm',
     'Return To Merchant',
+    'Return Reach To Merchant',
   ],
-  All: [],
 };
 
-// helper function: group by date
-const groupByDate = orders => {
-  return orders.reduce((acc, order) => {
+/* ================= HELPERS ================= */
+
+const groupByDate = orders =>
+  orders.reduce((acc, order) => {
     if (!order?.order_create_date) return acc;
-    const dateKey = order.order_create_date.split(' ')[0];
-    if (!acc[dateKey]) acc[dateKey] = [];
-    acc[dateKey].push(order);
+    const key = order.order_create_date.split(' ')[0];
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(order);
     return acc;
   }, {});
-};
+
+/* ================= COMPONENT ================= */
 
 const ParcelTable = () => {
   const searchParams = useSearchParams();
-  const queryStatus = searchParams.get('status') || 'All';
-
-  // parcel edit
-  const [selectedOrder, setSelectedOrder] = useState(null);
+  const queryStatus = searchParams.get('status') || TAB.ALL;
 
   const [activeTab, setActiveTab] = useState(queryStatus);
   const [orders, setOrders] = useState([]);
-  console.log(orders);
-  const [payments, setPayment] = useState([]);
-  const [delivered, setDelivered] = useState([]);
+  const [loadingOrders, setLoadingOrders] = useState(true);
+  
+  const { updatePendingCount } = useOrderContext();
 
-  const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
-  const [paginationGroup, setPaginationGroup] = useState(1);
-  const [expandedDates, setExpandedDates] = useState({});
 
-  // ------------------------------------------------
-
-  // fetch orders
-  useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        const stored = localStorage.getItem('token');
-        if (!stored) return;
-        const parsed = JSON.parse(stored);
-        const token = parsed?.token;
-        if (!token) return;
-
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_MERCHANT_API_KEY}/confirm-orders-list`,
-          { method: 'GET', headers: { Authorization: `Bearer ${token}` } },
-        );
-
-        if (!response.ok) throw new Error('Failed to fetch orders');
-
-        const data = await response.json();
-        console.log('Full API Response:', data);
-        
-        // Safely access the confirmed_order_list
-        const list = data?.data?.confirmed_order_list || data?.confirmed_order_list || [];
-        console.log('FULL LIST:', list);
-        
-        // Apply filtering only for Pending tab
-        let filteredOrders = list;
-        if (activeTab === 'Pending') {
-          filteredOrders = list.filter(item => String(item?.parcel_update_track_confirm) === "1");
-          console.log('Pending Orders:', filteredOrders);
-        }
-        
-        setOrders(filteredOrders);
-      } catch (err) {
-        console.error('API Error:', err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchOrders();
-  }, [activeTab]);
-
-  // fetch payments
-  useEffect(() => {
-    const fetchPayments = async () => {
-      try {
-        const stored = localStorage.getItem('token');
-        if (!stored) return;
-        const parsed = JSON.parse(stored);
-        const token = parsed?.token;
-        if (!token) return;
-
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_MERCHANT_API_KEY}/merchant-payment-history`,
-          { method: 'GET', headers: { Authorization: `Bearer ${token}` } },
-        );
-
-        if (!response.ok) throw new Error('Failed to fetch payments');
-
-        const data = await response.json();
-        setPayment(data.payments || []);
-      } catch (err) {
-        console.error('API Error:', err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchPayments();
-  }, []);
-
-  // fetch delivered
-  useEffect(() => {
-    const fetchDelivered = async () => {
-      try {
-        const stored = localStorage.getItem('token');
-        if (!stored) return;
-        const parsed = JSON.parse(stored);
-        const token = parsed?.token;
-        if (!token) return;
-
-        const response = await fetch(
-          `https://admin.merchantfcservice.com/api/order-delivered`,
-          { method: 'GET', headers: { Authorization: `Bearer ${token}` } },
-        );
-
-        if (!response.ok) throw new Error('Failed to fetch delivered');
-        const data = await response.json();
-
-        setDelivered(data?.in_review_delivered || []);
-      } catch (err) {
-        console.error('API Error:', err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchDelivered();
-  }, []);
+  /* ================= SYNC TAB ================= */
 
   useEffect(() => {
     setActiveTab(queryStatus);
     setCurrentPage(1);
-    setPaginationGroup(1);
   }, [queryStatus]);
 
-  const filteredOrders = orders.filter(order => {
-    if (activeTab === 'Pending') return true;
-    
-    if (activeTab === 'All' || activeTab === 'List by Date') return true;
-    
-    // Special handling for Approval Pending tab
-    if (activeTab === 'Approval Pending') {
-      return order.status === 'Successfully Delivered' || 
-             order.status === 'Delivered Amount Collected from Branch';
-    }
-    
-    const allowedStatuses = statusMapping[activeTab] || [];
-    return allowedStatuses.includes(order.status);
-  });
-  
-  // Log Approval Pending orders for debugging
-  if (activeTab === 'Approval Pending') {
-    console.log('Approval Pending Orders:', filteredOrders);
+  /* ================= FETCH ORDERS ================= */
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      setLoadingOrders(true);
+      try {
+        const token = JSON.parse(localStorage.getItem('token'))?.token;
+        if (!token) return;
+
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_MERCHANT_API_KEY}/confirm-orders-list`,
+          { headers: { Authorization: `Bearer ${token}` } },
+        );
+
+        const data = await res.json();
+        const list =
+          data?.data?.confirmed_order_list ||
+          data?.confirmed_order_list ||
+          [];
+
+        setOrders(list);
+        // Update the pending count in context
+        updatePendingCount(list);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoadingOrders(false);
+      }
+    };
+
+    fetchOrders();
+  }, [updatePendingCount]);
+
+  /* ================= FILTER LOGIC (FIXED) ================= */
+
+  const filteredOrders = useMemo(() => {
+  if (activeTab === TAB.ALL || activeTab === TAB.LIST_DATE) {
+    return orders;
   }
 
-  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
+  // Pending orders:
+  // parcel_update_track_confirm === '1'
+  if (activeTab === TAB.PENDING) {
+    return orders.filter(o =>
+      String(o?.parcel_update_track_confirm) === '1' &&
+      !statusMapping[TAB.APPROVAL].includes(o.status)
+    );
+  }
+
+  // PREVIEW
+  if (activeTab === TAB.PREVIEW) {
+    return orders.filter(
+      o =>
+        String(o?.parcel_update_track_confirm) !== '1' &&
+        statusMapping[TAB.PREVIEW].includes(o.status)
+    );
+  }
+
+  // Approval / Partial / Cancelled
+  const allowed = statusMapping[activeTab];
+  if (!allowed) return [];
+
+  return orders.filter(o => allowed.includes(o.status));
+}, [orders, activeTab]);
+
+
+  /* ================= PAGINATION ================= */
+
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedOrders = filteredOrders.slice(
     startIndex,
     startIndex + itemsPerPage,
   );
 
-  const handlePreviousPageGroup = () => {
-    if (paginationGroup > 1) {
-      setPaginationGroup(paginationGroup - 1);
-      setCurrentPage((paginationGroup - 2) * 5 + 1);
-    }
-  };
+  /* ================= UI ================= */
 
-  const handleNextPageGroup = () => {
-    const maxGroup = Math.ceil(totalPages / 5);
-    if (paginationGroup < maxGroup) {
-      setPaginationGroup(paginationGroup + 1);
-      setCurrentPage(paginationGroup * 5 + 1);
-    }
-  };
-
-  const handlePageClick = page => setCurrentPage(page);
-
-  const renderPageNumbers = () => {
-    const pages = [];
-    const start = (paginationGroup - 1) * 5 + 1;
-    const end = Math.min(start + 4, totalPages);
-    for (let i = start; i <= end; i++) {
-      pages.push(
-        <button
-          key={i}
-          onClick={() => handlePageClick(i)}
-          className={`mx-2 px-2.5 py-1 rounded-full text-sm font-medium transition ${
-            currentPage === i
-              ? 'button-primary cursor-pointer text-white'
-              : 'bg-white text-primary-active cursor-pointer hover:bg-blue-100'
-          }`}
-        >
-          {i}
-        </button>,
-      );
-    }
-    return pages;
-  };
-
-  const groupedOrders =
-    activeTab === 'List by Date'
-      ? groupByDate(filteredOrders)
-      : activeTab === 'Delivered'
-        ? groupByDate(
-            filteredOrders.filter(order =>
-              statusMapping['Delivered'].includes(order.status),
-            ),
-          )
-        : activeTab === 'Cancelled'
-          ? groupByDate(
-              filteredOrders.filter(order =>
-                statusMapping['Cancelled'].includes(order.status),
-              ),
-            )
-          : {};
-
-  useEffect(() => {
-    if (
-      activeTab === 'List by Date' ||
-      activeTab === 'Delivered' ||
-      activeTab === 'Cancelled' ||
-      activeTab === 'Payment' ||
-      activeTab === 'Delivered '
-    ) {
-      const today = new Date().toISOString().split('T')[0];
-      setExpandedDates({ [today]: true });
-    }
-  }, [activeTab]);
-
-  const toggleDateExpand = date => {
-    setExpandedDates(prev => ({
-      ...prev,
-      [date]: !prev[date],
-    }));
-  };
+  if (loadingOrders) return <Loading />;
 
   return (
     <div className="p-4 md:p-6 mt-8">
-      <h1 className="text-xl font-semibold mb-4">Consignments List</h1>
+      <h1 className="text-xl font-semibold mb-4">
+        Consignments List
+      </h1>
 
-      {/* Tabs */}
+      {/* TABS */}
       <div className="flex flex-wrap gap-2 mb-6 justify-center">
-        {tabs.map((tab, idx) => (
+        {tabs.map(tab => (
           <button
-            key={idx}
+            key={tab.value}
             onClick={() => {
               setActiveTab(tab.value);
               setCurrentPage(1);
-              setPaginationGroup(1);
             }}
-            className={`px-4 py-2 rounded border text-sm font-medium transition-colors ${
-              activeTab === tab.value
-                ? 'bg-blue-100 button-primary cursor-pointer'
-                : 'bg-white text-gray-700 cursor-pointer border-gray'
-            }`}
+            className={`px-4 py-2 rounded border text-sm
+              ${activeTab === tab.value
+                ? 'bg-blue-100 button-primary'
+                : 'bg-white border-gray'
+              }`}
           >
             {tab.label}
           </button>
         ))}
       </div>
 
-      {/* Table Section */}
-      <div className="w-full overflow-x-auto">
-        {loading ? (
-          <Loading />
-        ) : activeTab === 'List by Date' ||
-          activeTab === 'Delivered' ||
-          activeTab === 'Cancelled' ? (
-          // grouped orders section
-          Object.keys(groupedOrders).length === 0 ? (
-            <p className="text-center py-6">No data found.</p>
+      {/* TABLE */}
+      <table className="w-full text-left border">
+        <thead className="bg-blue-50 border-b">
+          <tr>
+            <th className="px-4 py-3">SL</th>
+            <th className="px-4 py-3">Date</th>
+            <th className="px-4 py-3">Tracking</th>
+            <th className="px-4 py-3">Customer</th>
+            <th className="px-4 py-3">Phone</th>
+            <th className="px-4 py-3">Charge</th>
+            <th className="px-4 py-3">Collection</th>
+            <th className="px-4 py-3">Remarks</th>
+            {activeTab === TAB.PENDING && (
+              <th className="px-4 py-3">Status</th>
+            )}
+            {activeTab === TAB.APPROVAL && (
+              <th className="px-4 py-3">Status</th>
+            )}
+            <th className="px-4 py-3">Action</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {paginatedOrders.length === 0 ? (
+            <tr>
+              <td colSpan={10} className="text-center py-6">
+                No data found
+              </td>
+            </tr>
           ) : (
-            Object.keys(groupedOrders).map(date => (
-              <div key={date} className="mb-6 rounded-lg shadow-sm">
-                <div className="flex justify-between items-center bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-t-lg border border-gray-200">
-                  <h2 className="text-lg font-bold text-gray-800 flex items-center">
-                    <Calendar className="w-5 h-5 mr-2 text-blue-600" />
-                    {date}
-                    <span className="ml-3 text-sm font-normal text-gray-600 bg-white px-2 py-1 rounded-full">
-                      {groupedOrders[date].length} Parcel
-                    </span>
-                  </h2>
-                  <button
-                    onClick={() => toggleDateExpand(date)}
-                    className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
+            paginatedOrders.map((order, idx) => (
+              <tr
+                key={`${order.tracking_id}-${startIndex + idx}`}
+                className="border-b"
+              >
+                <td className="px-4 py-3">
+                  {startIndex + idx + 1}
+                </td>
+
+                <td className="px-4 py-3">
+                  {order.order_create_date || '-'}
+                </td>
+
+                <td className="px-4 py-3">
+                  <Link
+                    href={`/dashboard/consignments/${order.tracking_id}`}
+                    className="text-blue-600"
                   >
-                    {expandedDates[date] ? 'Hide Data' : 'View Data'}
-                  </button>
-                </div>
-                {expandedDates[date] && (
-                  <div className="overflow-hidden rounded-b-lg shadow-sm border border-gray-200 border-t-0">
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-left">
-                        <thead className="bg-gray-50">
-                          <tr className="border-b border-gray-200">
-                            <th className="px-6 py-4">SL#</th>
-                            <th className="px-6 py-4">ID</th>
-                            <th className="px-6 py-4">Customer</th>
-                            <th className="px-6 py-4">Phone</th>
-                            <th className="px-6 py-4">Charge</th>
-                            <th className="px-6 py-4">Collection</th>
-                            <th className="px-6 py-4">Reason</th>
-                            <th className="px-6 py-4">Action</th>
-                          </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-100">
-                          {groupedOrders[date].map((order, idx) => (
-                            <tr
-                              key={`${order.id}-${idx}`}
-                              className="hover:bg-gray-50"
-                            >
-                              <td className="px-6 py-4">{idx + 1}</td>
-                              <td className="px-6 py-4">
-                                <Link
-                                  href={`/dashboard/consignments/${order.tracking_id}`}
-                                  className="text-blue-600 hover:text-blue-800"
-                                >
-                                  #{order.tracking_id}
-                                </Link>
-                              </td>
-                              <td className="px-6 py-4">
-                                {order.customer_name}
-                              </td>
-                              <td className="px-6 py-4">
-                                {order.customer_phone}
-                              </td>
-                              <td className="px-6 py-4">{order.delivery}</td>
-                              <td className="px-6 py-4">{order.collection}</td>
-                              <td className="px-6 py-4">
-                                {order?.reason_name || '-'}
-                              </td>
-                              <td className="px-6 py-4">
-                                <Link
-                                  href={`/dashboard/consignments/${order.tracking_id}`}
-                                  className="px-3 py-1 bg-blue-600 text-white rounded"
-                                >
-                                  View Details
-                                </Link>
-                                <button
-                                  onClick={() => setSelectedOrder(order)}
-                                  disabled={[
-                                    'Successfully Delivered',
-                                    'Delivered Amount Collected from Branch',
-                                    'Delivered Amount Send to Fulfillment',
-                                    'Payment Processing',
-                                    'Payment Processing Complete',
-                                    'Payment Completed',
-                                  ].includes(order?.status)}
-                                  className={`px-3 ml-2 py-1 rounded text-white 
-                                                         ${
-                                                           [
-                                                             'Successfully Delivered',
-                                                             'Delivered Amount Collected from Branch',
-                                                             'Delivered Amount Send to Fulfillment',
-                                                             'Payment Processing',
-                                                             'Payment Processing Complete',
-                                                             'Payment Completed',
-                                                           ].includes(
-                                                             order?.status,
-                                                           )
-                                                             ? 'bg-gray-400 cursor-not-allowed'
-                                                             : 'bg-blue-600'
-                                                         }
-                                  `}
-                                >
-                                  Edit
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
+                    #{order.tracking_id}
+                  </Link>
+                </td>
+
+                <td className="px-4 py-3">
+                  {order.customer_name}
+                </td>
+
+                <td className="px-4 py-3">
+                  {order.customer_phone}
+                </td>
+
+                <td className="px-4 py-3">
+                  {order.delivery}
+                </td>
+
+                <td className="px-4 py-3">
+                  {order.collection}
+                </td>
+
+                <td className="px-4 py-3">
+                  {order.remarks || '-'}
+                </td>
+
+                {activeTab === TAB.PENDING && (
+                  <td className="px-4 py-3 font-semibold">
+                    {order.status ===
+                      'Assigned To Delivery Rider'
+                      ? 'Assigned (Pending)'
+                      : 'Unassigned'}
+                  </td>
                 )}
-              </div>
+                {activeTab === TAB.APPROVAL && (
+                  <td className="px-4 py-3 font-semibold text-green-600">
+                    Successfully Delivered
+                  </td>
+                )}
+
+                <td className="px-4 py-3">
+                  <Link
+                    href={`/dashboard/consignments/${order.tracking_id}`}
+                    className="px-3 py-1 bg-blue-600 text-white rounded"
+                  >
+                    View
+                  </Link>
+                </td>
+              </tr>
             ))
-          )
-        ) : activeTab === 'Payment' ? (
-          // grouped payments section
-          (() => {
-            const groupedPayments = payments.reduce((acc, payment) => {
-              const dateKey = new Date(payment.created_at)
-                .toISOString()
-                .split('T')[0];
-              if (!acc[dateKey]) acc[dateKey] = [];
-              acc[dateKey].push(payment);
-              return acc;
-            }, {});
-
-            return Object.keys(groupedPayments).length === 0 ? (
-              <p className="text-center py-6">No payment history found.</p>
-            ) : (
-              Object.keys(groupedPayments).map(date => (
-                <div key={date} className="mb-6 rounded-lg shadow-sm">
-                  <div className="flex justify-between items-center bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-t-lg border border-gray-200">
-                    <h2 className="text-lg font-bold text-gray-800 flex items-center">
-                      <Calendar className="w-5 h-5 mr-2 text-blue-600" />
-                      {date}
-                      <span className="ml-3 text-sm font-normal text-gray-600 bg-white px-2 py-1 rounded-full">
-                        {groupedPayments[date].length} payments
-                      </span>
-                    </h2>
-                    <button
-                      onClick={() => toggleDateExpand(date)}
-                      className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
-                    >
-                      {expandedDates[date] ? 'Hide Data' : 'View Data'}
-                    </button>
-                  </div>
-                  {expandedDates[date] && (
-                    <div className="overflow-hidden rounded-b-lg shadow-sm border border-gray-200 border-t-0">
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-left text-gray-700">
-                          <thead className="bg-gray-50 border-b border-gray-200">
-                            <tr className="text-primary">
-                              <th className="px-6 py-4">SL#</th>
-                              <th className="px-6 py-4">Date & Time</th>
-                              <th className="px-6 py-4">Invoice No</th>
-                              <th className="px-6 py-4">Amount</th>
-                              <th className="px-6 py-4">Status</th>
-                              <th className="px-6 py-4 text-center">Action</th>
-                            </tr>
-                          </thead>
-                          <tbody className="bg-white divide-y divide-gray-100">
-                            {groupedPayments[date].map((payment, idx) => (
-                              <tr
-                                key={payment.id}
-                                className="hover:bg-gray-50 transition duration-150"
-                              >
-                                <td className="px-6 py-4">{idx + 1}</td>
-                                <td className="px-6 py-4">
-                                  {new Date(payment.created_at).toLocaleString(
-                                    'en-GB',
-                                    {
-                                      day: '2-digit',
-                                      month: '2-digit',
-                                      year: 'numeric',
-                                      hour: '2-digit',
-                                      minute: '2-digit',
-                                      second: '2-digit',
-                                      hour12: true,
-                                    },
-                                  )}
-                                </td>
-                                <td className="px-6 py-4 text-blue-600 font-medium">
-                                  {payment.invoice_id}
-                                </td>
-                                <td className="px-6 py-4">
-                                  {payment.t_payable}
-                                </td>
-                                <td
-                                  className={`px-6 py-4 font-semibold ${
-                                    payment.status ===
-                                    'Payment Received By Merchant'
-                                      ? 'text-green-600'
-                                      : payment.status === 'Payment Processing'
-                                        ? 'text-yellow-600'
-                                        : 'text-red-600'
-                                  }`}
-                                >
-                                  {payment.status ===
-                                  'Payment Received By Merchant'
-                                    ? 'Complete'
-                                    : payment.status === 'Payment Processing'
-                                      ? 'Processing'
-                                      : payment.status}
-                                </td>
-                                <td className="px-6 py-4 text-center">
-                                  <Link
-                                    href={`/dashboard/consignments/payment-details?invoiceId=${payment.invoice_id}`}
-                                    className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-                                  >
-                                    View
-                                  </Link>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))
-            );
-          })()
-        ) : activeTab === 'Delivered ' ? (
-          // NEW: Render a payments-style table using fakeDeliveredPayments
-          (() => {
-            const grouped = delivered.reduce((acc, item) => {
-              const dateKey = item.delivered_date?.split(' ')[0];
-              if (!acc[dateKey]) acc[dateKey] = [];
-              acc[dateKey].push(item);
-              return acc;
-            }, {});
-
-            return Object.keys(grouped).length === 0 ? (
-              <p className="text-center py-6 text-gray-600">
-                No delivered orders found.
-              </p>
-            ) : (
-              Object.keys(grouped).map(date => (
-                <div key={date} className="mb-6 rounded-lg shadow-sm">
-                  <div className="flex justify-between items-center bg-blue-50 p-4 rounded-t-lg border border-gray-200">
-                    <h2 className="text-lg font-bold text-gray-800 flex items-center">
-                      <Calendar className="w-5 h-5 mr-2 text-blue-600" />
-                      {date} (Delivered)
-                      <span className="ml-3 text-sm text-gray-600 bg-white px-2 py-1 rounded-full">
-                        {grouped[date].length} Delivered parcel
-                      </span>
-                    </h2>
-                    <button
-                      onClick={() => toggleDateExpand(date)}
-                      className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
-                    >
-                      {expandedDates[date] ? 'Hide Data' : 'View Data'}
-                    </button>
-                  </div>
-
-                  {expandedDates[date] && (
-                    <div className="overflow-hidden rounded-b-lg shadow-sm border border-gray-200 border-t-0">
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-left text-gray-700">
-                          <thead className="bg-gray-50 border-b border-gray-200">
-                            <tr className="text-primary">
-                              <th className="px-6 py-4">SL#</th>
-                              <th className="px-6 py-4">Tracking ID</th>
-                              <th className="px-6 py-4">Date</th>
-                              <th className="px-6 py-4">Customer</th>
-                              <th className="px-6 py-4">Phone</th>
-                              <th className="px-6 py-4">Charge</th>
-                              <th className="px-6 py-4">Status</th>
-                              <th className="px-6 py-4 text-center">Action</th>
-                            </tr>
-                          </thead>
-                          <tbody className="bg-white divide-y divide-gray-100">
-                            {grouped[date].map((order, idx) => (
-                              <tr
-                                key={order.order_id}
-                                className="hover:bg-gray-50 transition duration-150"
-                              >
-                                <td className="px-6 py-4">{idx + 1}</td>
-
-                                <td className="px-6 py-4">
-                                  {order.tracking_id}
-                                </td>
-                                <td className="px-6 py-4">
-                                  {order?.delivered_date
-                                    ? new Date(
-                                        order.delivered_date,
-                                      ).toLocaleString('en-US', {
-                                        hour: 'numeric',
-                                        minute: 'numeric',
-                                        second: 'numeric',
-                                        hour12: true,
-                                        year: 'numeric',
-                                        month: '2-digit',
-                                        day: '2-digit',
-                                      })
-                                    : '-'}
-                                </td>
-
-                                <td className="px-6 py-4 font-semibold">
-                                  {order?.customer_name}
-                                </td>
-                                <td className="px-6 py-4  font-semibold">
-                                  {order?.customer_phone}
-                                </td>
-                                <td className="px-6 py-4  font-semibold">
-                                  {order?.delivery_charge}৳
-                                </td>
-                                <td className="px-6 py-4 text-green-600 font-semibold">
-                                  {order?.status}
-                                </td>
-
-                                <td className="px-6 py-4 text-center">
-                                  <Link
-                                    href={`/dashboard/consignments/${order.tracking_id}`}
-                                    className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-                                  >
-                                    View
-                                  </Link>
-                                  <button
-                                    onClick={() => setSelectedOrder(order)}
-                                    disabled={[
-                                      'Successfully Delivered',
-                                      'Delivered Amount Collected from Branch',
-                                      'Delivered Amount Send to Fulfillment',
-                                      'Payment Processing',
-                                      'Payment Processing Complete',
-                                      'Payment Completed',
-                                    ].includes(order?.status)}
-                                    className={`px-3 ml-2 py-1 rounded text-white 
-                                                         ${
-                                                           [
-                                                             'Successfully Delivered',
-                                                             'Delivered Amount Collected from Branch',
-                                                             'Delivered Amount Send to Fulfillment',
-                                                             'Payment Processing',
-                                                             'Payment Processing Complete',
-                                                             'Payment Completed',
-                                                           ].includes(
-                                                             order?.status,
-                                                           )
-                                                             ? 'bg-gray-400 cursor-not-allowed'
-                                                             : 'bg-blue-600'
-                                                         }
-                                  `}
-                                  >
-                                    Edit
-                                  </button>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))
-            );
-          })()
-        ) : (
-          // normal table
-          <>
-            <table className="w-full table-auto text-[19px] text-left text-gray-700">
-              <thead className="border-b border-gray bg-gradient-to-r from-blue-50 to-indigo-50">
-                <tr className="text-primary">
-                  <th className="px-4 py-3">SL#</th>
-                  <th className="px-4 py-3">Create Date</th>
-                  <th className="px-4 py-3">ID</th>
-                  <th className="px-4 py-3">Customer Name</th>
-                  <th className="px-4 py-3">Customer Phone</th>
-                  <th className="px-4 py-3">Charge</th>
-                  <th className="px-4 py-3">Collection</th>
-                  <th className="px-4 py-3">Remarks</th>
-                  {/* ✅ ONLY FOR IN PREVIEW */}
-                  {activeTab === 'Pending' && (
-                    <th className="px-4 py-3">Status</th>
-                  )}
-                  
-                  {/* ✅ ONLY FOR APPROVAL PENDING */}
-                  {activeTab === 'Approval Pending' && (
-                    <th className="px-4 py-3">Status</th>
-                  )}
-
-                  <th className="px-4 py-3">Details</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedOrders.length === 0 ? (
-                  <tr>
-                    <td colSpan={10} className="px-4 py-3 text-center">
-                      No data found.
-                    </td>
-                  </tr>
-                ) : (
-                  paginatedOrders.map((order, idx) => (
-                    <tr
-                      className=" border-b-2 border-gray-200"
-                      key={`${order.id}-${idx}`}
-                    >
-                      <td className="px-4 py-3">{startIndex + idx + 1}</td>
-                      <td className="px-6 py-4">
-                        {order?.order_create_date
-                          ? new Date(order.order_create_date).toLocaleString(
-                              'en-US',
-                              {
-                                hour: 'numeric',
-                                minute: 'numeric',
-                                second: 'numeric',
-                                hour12: true,
-                                year: 'numeric',
-                                month: '2-digit',
-                                day: '2-digit',
-                              },
-                            )
-                          : '-'}
-                      </td>
-
-                      {/* <td className="px-4 py-3">{order.}</td> */}
-                      <td className="px-4 py-3">
-                        <Link
-                          href={`/dashboard/consignments/${order.tracking_id}`}
-                          className="text-blue-600"
-                        >
-                          #{order.tracking_id}
-                        </Link>
-                      </td>
-                      <td className="px-4 py-3">{order.customer_name}</td>
-                      <td className="px-4 py-3">{order.customer_phone}</td>
-                      <td className="px-4 py-3">{order.delivery}</td>
-                      <td className="px-4 py-3">{order.collection}</td>
-                      <td className="px-4 py-3">
-                        {order.remarks ? order.remarks : '-'}
-                      </td>
-                      {/* ✅ ONLY IN PREVIEW */}
-                      {activeTab === 'Pending' && (
-                        <td className="px-4 py-3 text-yellow-600 font-semibold">
-                          Unassigned
-                        </td>
-                      )}
-                      
-                      {/* ✅ ONLY FOR APPROVAL PENDING */}
-                      {activeTab === 'Approval Pending' && (
-                        <td className="px-4 py-3">
-                          {order.status === 'Delivered Amount Collected from Branch' 
-                            ? 'Successfully Delivered' 
-                            : order.status}
-                        </td>
-                      )}
-                      <td className="px-4 py-3">
-                        <Link
-                          href={`/dashboard/consignments/${order.tracking_id}`}
-                          className="px-3 py-1 bg-blue-600 text-white rounded"
-                        >
-                          view
-                        </Link>
-                        {/* <button
-                          onClick={() => setSelectedOrder(order)}
-                          disabled={[
-                            'Successfully Delivered',
-                            'Delivered Amount Collected from Branch',
-                            'Delivered Amount Send to Fulfillment',
-                            'Payment Processing',
-                            'Payment Processing Complete',
-                            'Payment Completed',
-                          ].includes(order?.status)}
-                          className={`px-3 ml-2 py-1 rounded text-white 
-                                                         ${
-                                                           [
-                                                             'Successfully Delivered',
-                                                             'Delivered Amount Collected from Branch',
-                                                             'Delivered Amount Send to Fulfillment',
-                                                             'Payment Processing',
-                                                             'Payment Processing Complete',
-                                                             'Payment Completed',
-                                                           ].includes(
-                                                             order?.status,
-                                                           )
-                                                             ? 'bg-gray-400 cursor-not-allowed'
-                                                             : 'bg-blue-600'
-                                                         }
-                                  `}
-                        >
-                          <FiEdit />
-                        </button> */}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-            {/* === Modal Open হলে Show হবে === */}
-          </>
-        )}
-      </div>
-
-      {/* Pagination */}
-      {activeTab !== 'List by Date' &&
-        activeTab !== 'Delivered' &&
-        activeTab !== 'Cancelled' &&
-        activeTab !== 'Payment' &&
-        activeTab !== 'Delivered ' && (
-          <div className="flex justify-center items-center mt-6">
-            <button
-              onClick={handlePreviousPageGroup}
-              disabled={paginationGroup === 1}
-              className={`mx-2 px-2 py-1 text-sm rounded-full ${
-                paginationGroup === 1
-                  ? 'text-gray-400 cursor-not-allowed'
-                  : 'text-primary hover:bg-blue-100'
-              }`}
-            >
-              <FaChevronLeft />
-            </button>
-            {renderPageNumbers()}
-            <button
-              onClick={handleNextPageGroup}
-              disabled={paginationGroup * 5 >= totalPages}
-              className={`mx-2 px-2 py-1 text-sm rounded-full ${
-                paginationGroup * 5 >= totalPages
-                  ? 'text-gray-400 cursor-not-allowed'
-                  : 'text-primary hover:bg-blue-100'
-              }`}
-            >
-              <FaChevronRight />
-            </button>
-          </div>
-        )}
-      {/* {selectedOrder && (
-        <EditPercaleModal
-          order={selectedOrder}
-          onClose={() => setSelectedOrder(null)}
-        />
-      )} */}
+          )}
+        </tbody>
+      </table>
     </div>
   );
 };
