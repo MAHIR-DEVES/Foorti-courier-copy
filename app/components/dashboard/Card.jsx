@@ -141,13 +141,13 @@ const Card = () => {
         {performanceData.map((item, index) => {
           let value = dashboardData[item.key] || 0;
           
-          if(item.key === 'delivery_processing') {
-            value = pendingCount;
-          }
+          // if(item.key === 'delivery_processing') {
+          //   value = pendingCount;
+          // }
           
-          if(item.key === 'cod_processing') {
-            value = codPendingCount;
-          }
+          // if(item.key === 'cod_processing') {
+          //   value = codPendingCount;
+          // }
 
           return (
             <CompactDashboardCard 
