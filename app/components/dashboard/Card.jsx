@@ -11,14 +11,14 @@ import Link from 'next/link';
 import { useOrderContext } from '@/app/contexts/OrderContext';
 
 const performanceData = [
-  {
-    title: 'Delivery Processing',
-    key: 'delivery_processing',
-    icon: <Package className="w-5 h-5" />,
-    color: 'bg-blue-100',
-    textColor: 'text-blue-700',
-    link: '/dashboard/consignments?status=Pending',
-  },
+  // {
+  //   title: 'Delivery Processing',
+  //   key: 'delivery_processing',
+  //   icon: <Package className="w-5 h-5" />,
+  //   color: 'bg-blue-100',
+  //   textColor: 'text-blue-700',
+  //   link: '/dashboard/consignments?status=Pending',
+  // },
   {
     title: 'COD Processing',
     key: 'cod_processing',
