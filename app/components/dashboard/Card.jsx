@@ -123,8 +123,8 @@ const Card = () => {
   if (!dataLoaded && apiLoading) {
     return (
       <div className="flex flex-col items-center w-full max-w-6xl mx-auto px-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full my-8">
-          {[1,2,3,4].map(i => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full my-8">
+          {[1,2,3].map(i => (
             <div key={i} className="bg-blue-100 rounded-lg p-4 min-h-[100px] animate-pulse">
               <div className="h-4 bg-blue-200 rounded w-3/4 mb-2"></div>
               <div className="h-6 bg-blue-200 rounded w-1/2"></div>
@@ -137,7 +137,7 @@ const Card = () => {
 
   return (
     <div className="flex flex-col items-center w-full max-w-6xl mx-auto px-4">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full my-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full my-8">
         {performanceData.map((item, index) => {
           let value = dashboardData[item.key] || 0;
           
