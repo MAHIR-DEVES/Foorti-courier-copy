@@ -45,7 +45,7 @@ const performanceData = [
   },
 ];
 
-const CompactDashboardCard = ({ item, value, loading }) => {
+const CompactDashboardCard = ({ item, value }) => {
   return (
     <Link href={item.link} className="block">
       <div 
@@ -71,11 +71,7 @@ const CompactDashboardCard = ({ item, value, loading }) => {
               {item.title}
             </h3>
             <div className="text-xl font-bold">
-              {loading ? (
-                <div className="h-6 w-16 bg-gray-200 rounded animate-pulse"></div>
-              ) : (
-                <span>{value.toLocaleString()}</span>
-              )}
+              <span>{value.toLocaleString()}</span>
             </div>
           </div>
         </div>
@@ -87,7 +83,7 @@ const CompactDashboardCard = ({ item, value, loading }) => {
 const Card = () => {
   const [dashboardData, setDashboardData] = useState({});
   const [apiLoading, setApiLoading] = useState(true);
-  const [initialLoad, setInitialLoad] = useState(true);
+  const [dataLoaded, setDataLoaded] = useState(false); // নতুন state
   
   const { pendingCount, codPendingCount } = useOrderContext();
   
@@ -116,15 +112,28 @@ const Card = () => {
         console.error('API Error:', error);
       } finally {
         setApiLoading(false);
-        setInitialLoad(false);
+        setDataLoaded(true); 
       }
     };
 
     fetchDashboardData();
   }, []);
 
-  // Show loading only on initial load
-  const loading = initialLoad && apiLoading;
+
+  if (!dataLoaded && apiLoading) {
+    return (
+      <div className="flex flex-col items-center w-full max-w-6xl mx-auto px-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full my-8">
+          {[1,2,3,4].map(i => (
+            <div key={i} className="bg-blue-100 rounded-lg p-4 min-h-[100px] animate-pulse">
+              <div className="h-4 bg-blue-200 rounded w-3/4 mb-2"></div>
+              <div className="h-6 bg-blue-200 rounded w-1/2"></div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col items-center w-full max-w-6xl mx-auto px-4">
@@ -145,7 +154,6 @@ const Card = () => {
               key={index}
               item={item}
               value={value}
-              loading={loading}
             />
           );
         })}

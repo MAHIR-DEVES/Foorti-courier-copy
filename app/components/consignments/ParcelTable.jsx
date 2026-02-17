@@ -65,6 +65,9 @@ const statusMapping = {
     'Successfully Delivered',
     'Delivered Amount Collected from Branch',
     'Delivered Amount Send to Fulfillment',
+    'Payment Processing',
+    'Payment Completed',
+    'Payment Processing Complete',
   ],
 };
 
@@ -172,7 +175,7 @@ const ParcelTable = () => {
         // Update context
         updatePendingCount(list);
         updateCodPendingCount(list);
-        setAllOrders(list);  // This line should be here
+        setAllOrders(list);
 
       } catch (err) {
         console.error('Orders API Error:', err);
@@ -183,8 +186,8 @@ const ParcelTable = () => {
 
     fetchOrders();
 
-    
-  }, []);  
+
+  }, []);
 
   /* ================= FETCH PAYMENTS ================= */
 
@@ -253,16 +256,21 @@ const ParcelTable = () => {
       return orders;
     }
 
-    // Pending tab: parcel_update_track_confirm === "1" AND not delivered
+
+    // Pending tab: parcel_update_track_confirm === "1" AND not in delivered statuses
     if (activeTab === TAB.PENDING) {
       return orders.filter(order =>
         String(order?.parcel_update_track_confirm) === "1" &&
-        ![
-          'Successfully Delivered',
+        !['Successfully Delivered',
           'Delivered Amount Collected from Branch',
+          'Delivered Amount Send to Fulfillment',
+          'Payment Processing',
+          'Payment Completed',
+          'Payment Processing Complete',
         ].includes(order.status)
       );
     }
+
 
     // Preview tab: parcel_update_track_confirm !== "1" AND status in mapping
     if (activeTab === TAB.PREVIEW) {
