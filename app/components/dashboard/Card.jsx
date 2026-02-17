@@ -6,8 +6,6 @@ import {
   Package,
   DollarSign,
   RefreshCw,
-  ArrowUpRight,
-  ArrowDownRight,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useOrderContext } from '@/app/contexts/OrderContext';
@@ -46,7 +44,6 @@ const performanceData = [
     link: '/dashboard/latest-return',
   },
 ];
-
 
 const CompactDashboardCard = ({ item, value, loading }) => {
   return (
@@ -89,13 +86,15 @@ const CompactDashboardCard = ({ item, value, loading }) => {
 
 const Card = () => {
   const [dashboardData, setDashboardData] = useState({});
-  const [loading, setLoading] = useState(true);
+  const [apiLoading, setApiLoading] = useState(true);
+  const [initialLoad, setInitialLoad] = useState(true);
   
   const { pendingCount, codPendingCount } = useOrderContext();
   
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
+        setApiLoading(true);
         const stored = localStorage.getItem('token');
         const token = stored ? JSON.parse(stored).token : null;
         const res = await fetch(
@@ -116,26 +115,27 @@ const Card = () => {
       } catch (error) {
         console.error('API Error:', error);
       } finally {
-        setLoading(false);
+        setApiLoading(false);
+        setInitialLoad(false);
       }
     };
 
     fetchDashboardData();
   }, []);
 
+  // Show loading only on initial load
+  const loading = initialLoad && apiLoading;
+
   return (
     <div className="flex flex-col items-center w-full max-w-6xl mx-auto px-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full my-8">
         {performanceData.map((item, index) => {
-          // Get the value from dashboard data
           let value = dashboardData[item.key] || 0;
           
-          // For the Delivery Processing card, use the pending count from context
           if(item.key === 'delivery_processing') {
             value = pendingCount;
           }
           
-          // For the COD Processing card, use the COD pending count from context
           if(item.key === 'cod_processing') {
             value = codPendingCount;
           }
