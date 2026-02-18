@@ -114,11 +114,6 @@ const Topbar = ({ toggleSidebar, toggleMobileSearch, showMobileSearch }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // handel navigation to details page
-  // const navigateToDetails = () => {
-  //   router.push(`/dashboard/consignments/${parcel?.data?.tracking_id}`);
-  // };
-
   const CheckBalanceButton = () => (
     <button
       className="flex items-center gap-3 px-4 py-1.5 rounded-full border border-[#1976d2] text-primary-active shadow-sm hover:shadow-md transition-all duration-300 bg-[#FAFAFA] cursor-pointer"
@@ -147,10 +142,6 @@ const Topbar = ({ toggleSidebar, toggleMobileSearch, showMobileSearch }) => {
       )}
     </button>
   );
-
-  // if (!parcel || !parcel.data) {
-  //   return <p>Loading...</p>;
-  // }
 
   return (
     <div className="bg-primary px-5 py-8 shadow sticky top-0 z-10">
@@ -234,19 +225,26 @@ const Topbar = ({ toggleSidebar, toggleMobileSearch, showMobileSearch }) => {
           </div>
         </div>
 
-        {/* Right side icons */}
-        <div className="flex items-center gap-4">
+        {/* Right side icons  */}
+        <div className="flex items-center gap-2">
+          {/* Mobile Search Icon */}
           <FaSearch
             onClick={toggleMobileSearch}
             className="text-lg text-gray-600 cursor-pointer md:hidden hover:text-gray-800 transition-colors duration-200"
           />
 
-          <div className="hidden md:flex items-center gap-4">
-            <LanguageToggle />
-            <div className="cursor-pointer p-3 rounded-full transition-all duration-300 bg-[#F5F5F5]">
-              <GoNote className="text-xl text-gray-600 transition-colors duration-200" />
-            </div>
+          {/* Note Icon */}
+          <div className="cursor-pointer p-2 md:p-3 rounded-full transition-all duration-300 hover:bg-gray-100 md:bg-[#F5F5F5]">
+            <GoNote className="text-lg md:text-xl text-gray-600 transition-colors duration-200" />
+          </div>
+
+          {/* NotificationBell */}
+          <div className="scale-90 md:scale-100">
             <NotificationBell />
+          </div>
+
+          {/* ProfileMenu  */}
+          <div className="scale-90 md:scale-100">
             <ProfileMenu />
           </div>
         </div>
