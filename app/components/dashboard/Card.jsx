@@ -11,14 +11,14 @@ import Link from 'next/link';
 import { useOrderContext } from '@/app/contexts/OrderContext';
 
 const performanceData = [
-  // {
-  //   title: 'Delivery Processing',
-  //   key: 'delivery_processing',
-  //   icon: <Package className="w-5 h-5" />,
-  //   color: 'bg-blue-100',
-  //   textColor: 'text-blue-700',
-  //   link: '/dashboard/consignments?status=Pending',
-  // },
+  {
+    title: 'Delivery Processing',
+    key: 'delivery_processing',
+    icon: <Package className="w-5 h-5" />,
+    color: 'bg-blue-100',
+    textColor: 'text-blue-700',
+    link: '/dashboard/consignments?status=Pending',
+  },
   {
     title: 'COD Processing',
     key: 'cod_processing',
@@ -83,7 +83,7 @@ const CompactDashboardCard = ({ item, value }) => {
 const Card = () => {
   const [dashboardData, setDashboardData] = useState({});
   const [apiLoading, setApiLoading] = useState(true);
-  const [dataLoaded, setDataLoaded] = useState(false); // নতুন state
+  const [dataLoaded, setDataLoaded] = useState(false);
   
   const { pendingCount, codPendingCount } = useOrderContext();
   
@@ -94,7 +94,7 @@ const Card = () => {
         const stored = localStorage.getItem('token');
         const token = stored ? JSON.parse(stored).token : null;
         const res = await fetch(
-          'https://admin.merchantfcservice.com/api/dashboard-button-list',
+          `${process.env.NEXT_PUBLIC_MERCHANT_API_KEY}/dashboard-button-list`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -119,12 +119,25 @@ const Card = () => {
     fetchDashboardData();
   }, []);
 
+  // Data mapping function
+  const getDisplayValue = (key) => {
+    // If data exists in the backend, use it
+    if (dashboardData[key] !== undefined && dashboardData[key] !== null) {
+      return dashboardData[key];
+    }
+    
+    // If data does not exist in the backend, use context data    
+    if (key === 'delivery_processing') return pendingCount;
+    if (key === 'cod_processing') return codPendingCount;
+    
+    return 0;
+  };
 
   if (!dataLoaded && apiLoading) {
     return (
       <div className="flex flex-col items-center w-full max-w-6xl mx-auto px-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full my-8">
-          {[1,2,3].map(i => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full my-8">
+          {[1,2,3,4].map(i => (
             <div key={i} className="bg-blue-100 rounded-lg p-4 min-h-[100px] animate-pulse">
               <div className="h-4 bg-blue-200 rounded w-3/4 mb-2"></div>
               <div className="h-6 bg-blue-200 rounded w-1/2"></div>
@@ -137,18 +150,10 @@ const Card = () => {
 
   return (
     <div className="flex flex-col items-center w-full max-w-6xl mx-auto px-4">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full my-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full my-8">
         {performanceData.map((item, index) => {
-          let value = dashboardData[item.key] || 0;
+          const value = getDisplayValue(item.key);
           
-          // if(item.key === 'delivery_processing') {
-          //   value = pendingCount;
-          // }
-          
-          // if(item.key === 'cod_processing') {
-          //   value = codPendingCount;
-          // }
-
           return (
             <CompactDashboardCard 
               key={index}

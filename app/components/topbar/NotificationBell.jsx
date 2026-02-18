@@ -123,7 +123,8 @@ const NotificationBell = () => {
       const currentTime = new Date().toISOString();
       try {
         localStorage.setItem('lastSeenNotificationTime', currentTime);
-        setUnreadCount(0); // Remove the red mark immediately
+        // Remove the red mark immediately
+        setUnreadCount(0); 
         console.log('Marked all notifications as read at:', currentTime);
       } catch (error) {
         console.error('Failed to save last seen time:', error);
