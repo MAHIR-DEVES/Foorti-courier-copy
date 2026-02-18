@@ -58,3 +58,21 @@ html {
 body {
   overflow-x: hidden;
 }
+
+/* Responsive header adjustments */
+@media (max-width: 768px) {
+  .header-logo-small {
+    height: 3rem !important; /* 48px on mobile */
+  }
+  
+  .header-flex-wrap {
+    flex-wrap: wrap !important;
+    gap: 1rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-logo-small {
+    height: 2.5rem !important; /* 40px on very small screens */
+  }
+}

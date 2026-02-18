@@ -54,7 +54,7 @@ const Topbar = ({ toggleSidebar, toggleMobileSearch, showMobileSearch }) => {
 
   const handleCheckBalance = async () => {
     if (!balanceClicked && !data) {
-      await fetchDashboard(); // 👈 only when clicked first time
+      await fetchDashboard(); 
     }
     setBalanceClicked(!balanceClicked);
   };
@@ -160,15 +160,15 @@ const Topbar = ({ toggleSidebar, toggleMobileSearch, showMobileSearch }) => {
           className="text-xl cursor-pointer md:mr-4 hover:text-gray-600 transition-colors duration-200"
         />
 
-        <div className="flex-1 flex items-center justify-center md:justify-between relative">
+        <div className="flex-1 flex flex-wrap items-center justify-center md:justify-between gap-4 relative header-flex-wrap">
           <img
             src="/img/logo.png"
             alt="logo"
-            className="h-20 mx-auto md:mx-0 md:ml-4 transition-opacity duration-200"
+            className="h-20 md:h-20 mx-auto md:mx-0 md:ml-4 transition-all duration-200 w-auto header-logo-small"
           />
 
           {/* Desktop Search */}
-          <div className="hidden md:flex items-center justify-center gap-4 absolute left-1/2 transform -translate-x-1/2">
+          <div className="hidden md:flex items-center justify-center gap-4">
             <div ref={dropdownRef} className="relative w-60">
               <input
                 value={query}
