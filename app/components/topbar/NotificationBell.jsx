@@ -1,5 +1,5 @@
 'use client';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { FaBell } from 'react-icons/fa';
 
 const API_URL = 'https://admin.merchantfcservice.com/api/notification-list';
@@ -10,46 +10,98 @@ const NotificationBell = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const notificationRef = useRef(null);
 
-  // 🔹 Load last seen time
-  const lastSeenTime =
-    typeof window !== 'undefined'
-      ? localStorage.getItem('lastSeenNotificationTime')
-      : null;
+  // Helper function to get notification timestamp
+  const getNotificationTimestamp = (item) => {
+    // Try different possible timestamp fields
+    const timestamp = item.createdAt || item.created_at || item.date || item.timestamp;
+    
+    if (!timestamp) {
+      console.warn('Notification missing timestamp field:', item);
+      return null;
+    }
+    
+    const date = new Date(timestamp);
+    if (isNaN(date.getTime())) {
+      console.warn('Invalid timestamp for notification:', item.id, timestamp);
+      return null;
+    }
+    
+    return date;
+  };
 
-  // 🔁 API polling every 5 sec
-  useEffect(() => {
-    const fetchNotifications = async () => {
-      try {
-        const stored = localStorage.getItem('token');
-        const token = stored ? JSON.parse(stored).token : null;
-        const res = await fetch(API_URL, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        const data = await res.json();
+  // Fetch notifications
+  const fetchNotifications = useCallback(async () => {
+    try {
+      const stored = localStorage.getItem('token');
+      const token = stored ? JSON.parse(stored).token : null;
+      
+      if (!token) return;
 
-        setNotifications(data);
+      const res = await fetch(API_URL, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      
+      if (!res.ok) throw new Error('Failed to fetch');
+      
+      const data = await res.json();
+      
+      // Validate and process notifications
+      const validNotifications = data.filter(item => {
+        const timestamp = getNotificationTimestamp(item);
+        return timestamp !== null;
+      });
+      
+      setNotifications(validNotifications);
 
-        // 🧮 Count only NEW notifications
-        const newOnes = data.filter(item => {
-          if (!lastSeenTime) return true;
-          return new Date(item.createdAt) > new Date(lastSeenTime);
-        });
-
-        setUnreadCount(newOnes.length);
-      } catch (error) {
-        console.error('Notification fetch error:', error);
+      // Get last seen time
+      const lastSeen = localStorage.getItem('lastSeenNotificationTime');
+      
+      // Count unread notifications (created after lastSeen)
+      let newCount = 0;
+      
+      if (!lastSeen) {
+        // First time user - all notifications are unread
+        newCount = validNotifications.length;
+      } else {
+        const lastSeenDate = new Date(lastSeen);
+        
+        if (isNaN(lastSeenDate.getTime())) {
+          console.warn('Invalid lastSeenNotificationTime in localStorage:', lastSeen);
+          // If last seen time is invalid, treat all as unread
+          newCount = validNotifications.length;
+        } else {
+          // Count notifications newer than last seen time
+          newCount = validNotifications.filter(item => {
+            const itemDate = getNotificationTimestamp(item);
+            return itemDate && itemDate > lastSeenDate;
+          }).length;
+        }
       }
-    };
 
+      setUnreadCount(newCount);
+      
+      // Debug logging (remove in production)
+      console.log('Notifications fetched:', {
+        total: validNotifications.length,
+        unread: newCount,
+        lastSeen: lastSeen
+      });
+      
+    } catch (error) {
+      console.error('Notification fetch error:', error);
+    }
+  }, []);
+
+  // Polling every 5 seconds
+  useEffect(() => {
     fetchNotifications();
     const interval = setInterval(fetchNotifications, 5000);
-
     return () => clearInterval(interval);
-  }, [lastSeenTime]);
+  }, [fetchNotifications]);
 
-  // ❌ Outside click close
+  // Handle click outside
   useEffect(() => {
     const handleClickOutside = e => {
       if (
@@ -64,63 +116,95 @@ const NotificationBell = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // 👀 When user opens notification
-  const handleOpen = () => {
+  // Handle bell click
+  const handleBellClick = () => {
+    if (!isOpen) {
+      // Opening the dropdown - mark all as read
+      const currentTime = new Date().toISOString();
+      try {
+        localStorage.setItem('lastSeenNotificationTime', currentTime);
+        setUnreadCount(0); // Remove the red mark immediately
+        console.log('Marked all notifications as read at:', currentTime);
+      } catch (error) {
+        console.error('Failed to save last seen time:', error);
+      }
+    }
     setIsOpen(!isOpen);
-    setUnreadCount(0);
-    localStorage.setItem('lastSeenNotificationTime', new Date().toISOString());
   };
 
-  return (
-    <div className="relative" ref={notificationRef}>
-      <div
-        className="cursor-pointer p-3 rounded-full bg-[#F5F5F5]"
-        onClick={handleOpen}
-      >
-        <FaBell className="text-xl text-secondary" />
+  // Initialize last seen time if it doesn't exist
+  useEffect(() => {
+    const lastSeen = localStorage.getItem('lastSeenNotificationTime');
+    if (!lastSeen) {
+      // Set initial last seen time to current time for new users
+      const currentTime = new Date().toISOString();
+      try {
+        localStorage.setItem('lastSeenNotificationTime', currentTime);
+        console.log('Initialized last seen time:', currentTime);
+      } catch (error) {
+        console.error('Failed to initialize last seen time:', error);
+      }
+    }
+  }, []);
 
+  return (
+    <div className="relative inline-block" ref={notificationRef}>
+      <button
+        onClick={handleBellClick}
+        className="relative p-2 rounded-full hover:bg-gray-100 transition-colors focus:outline-none"
+      >
+        <FaBell className="w-6 h-6 text-gray-600" />
+        
+        {/* Unread count badge - shows only when there are unread notifications */}
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
-            {unreadCount}
+          <span className="absolute top-0 right-0 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full min-w-[1.25rem] h-5">
+            {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}
-      </div>
+      </button>
 
+      {/* Dropdown - fixed width and responsive */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 h-96 bg-white border rounded-lg shadow-lg p-3 z-20">
-          <h2 className="font-semibold mb-2">Notifications</h2>
+        <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white border rounded-lg shadow-lg z-50 max-h-[32rem] flex flex-col">
+          {/* Header */}
+          <div className="px-4 py-3 border-b bg-white rounded-t-lg">
+            <h3 className="text-sm font-semibold text-gray-700">
+              Notifications
+              {notifications.length > 0 && (
+                <span className="ml-2 text-xs text-gray-500">
+                  ({notifications.length} total)
+                </span>
+              )}
+            </h3>
+          </div>
 
-          <div className="space-y-2 overflow-y-auto h-full">
-            {notifications.length === 0 && (
-              <p className="text-sm text-gray-500">No notifications</p>
-            )}
-
-            {notifications.map(item => (
-              <div
-                key={item.id}
-                className="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-lg transition-colors group"
-              >
-                <div
-                  className={`w-3 h-3 rounded-full flex-shrink-0 ${
-                    item.read_data === 'unread'
-                      ? 'bg-blue-500 animate-pulse'
-                      : 'bg-gray-300'
-                  }`}
-                ></div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 ">
-                    {item.message}
-                  </p>
-                  <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
-                    <span>#{item.id}</span>
-                    <span>•</span>
-                    <span>User {item.user_id}</span>
-                    <span>•</span>
-                    <span>{item.date}</span>
-                  </div>
-                </div>
+          {/* Notifications list with proper overflow handling */}
+          <div className="overflow-y-auto flex-1 max-h-[400px]">
+            {notifications.length === 0 ? (
+              <div className="px-4 py-8 text-center text-gray-500 text-sm">
+                No notifications
               </div>
-            ))}
+            ) : (
+              <div className="divide-y divide-gray-100">
+                {notifications.map((item) => (
+                  <div
+                    key={item.id}
+                    className="px-4 py-3 hover:bg-gray-50 transition-colors"
+                  >
+                    <p className="text-sm text-gray-800 break-words pr-2">
+                      {item.message}
+                    </p>
+                    <div className="flex flex-wrap items-center gap-1 mt-1 text-xs text-gray-500">
+                      <span>#{item.id}</span>
+                      <span>•</span>
+                      <span>User {item.user_id}</span>
+                      <span>•</span>
+                      <span>{item.date}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}
