@@ -135,9 +135,6 @@
       "brand": "@PACKHEXA",
       "description": "Passed to ensure these COD constraints & a reduction assessment will apply every million customers. Have any option?",
       "links": [
-        "Pagedone",
-        "Power",
-        "Abuse",
         "Pricing",
         "Contact",
         "Payment To System",
@@ -145,7 +142,8 @@
         "Responsive Needs"
       ],
       "social": "Follow Us",
-      "copyRight": "© Creative Software 2024, All rights reserved."
+      "copyRight": "Foorti Courier © 2026. All rights reserved.",
+      "developedBy":"Develop by Creative Software."
     }
   },
   "loginPage": {

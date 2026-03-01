@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import { FaTwitter, FaInstagram, FaFacebook, FaYoutube } from 'react-icons/fa';
 import { useTranslations } from 'next-intl';
-import { FiPhone } from 'react-icons/fi'; // Import phone icon
+import { FiPhone } from 'react-icons/fi'; 
 
 const Footer = () => {
   const tFooter = useTranslations('homePage.footer');
@@ -14,19 +14,11 @@ const Footer = () => {
 
   const footerLinks = [
     {
-      title: tFooter('titleOne'),
-      links: [
-        { name: tFooter('links.0'), url: '#' },
-        { name: tFooter('links.1'), url: '#' },
-        { name: tFooter('links.2'), url: '#' },
-      ],
-    },
-    {
       title: tFooter('titleTwo'),
       links: [
+        { name: tFooter('links.2'), url: '#' },
         { name: tFooter('links.3'), url: '#' },
         { name: tFooter('links.4'), url: '#' },
-        { name: tFooter('links.5'), url: '#' },
       ],
     },
   ];
@@ -57,7 +49,7 @@ const Footer = () => {
   return (
     <footer className="w-full mt-16 scroll-mt-24" id="about">
       <div className="mx-auto container px-4 scroll-mt-24" id="contact">
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 gap-y-8 md:gap-8 py-10 max-w-sm mx-auto sm:max-w-3xl lg:max-w-full">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 gap-y-8 md:gap-8 py-10 max-w-sm mx-auto sm:max-w-3xl lg:max-w-full">
           
           {/* Company Info Section - Logo, Contact, Description */}
           <div className="col-span-full mb-6 lg:col-span-2 lg:mb-0">
@@ -184,8 +176,13 @@ const Footer = () => {
         <div className="py-7 border-t border-gray">
           <div className="flex items-center justify-center">
             <span className="text-md text-secondary">
-              <a target="_blank" href="https://creativesoftware.com.bd/" rel="noopener noreferrer">
+              <a target="_blank" href="https://www.foorticourier.com/" rel="noopener noreferrer">
                 {tFooter('copyRight')}
+              </a>
+            </span> <span className='px-2'>|</span> 
+            <span className="text-md text-secondary">
+              <a target="_blank" href="https://creativesoftware.com.bd/" rel="noopener noreferrer">
+                {tFooter('developedBy')}
               </a>
             </span>
           </div>
